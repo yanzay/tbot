@@ -43,15 +43,20 @@ func (s *Server) processMessage(message telebot.Message) {
 		handler = s.defaultHandler
 	}
 	if handler != nil {
-		m := Message{message, data, make(chan string), make(chan struct{})}
+		m := Message{message, data, make(chan *ReplyMessage), make(chan struct{})}
 		go func() {
 			handler(m)
 			m.close <- struct{}{}
 		}()
 		for {
 			select {
-			case str := <-m.replies:
-				s.bot.SendMessage(message.Chat, str, nil)
+			case reply := <-m.replies:
+				switch reply.messageType {
+				case MessageText:
+					s.bot.SendMessage(message.Chat, reply.Text, nil)
+				case MessageSticker:
+					s.bot.SendSticker(message.Chat, &reply.Sticker, nil)
+				}
 			case <-m.close:
 				return
 			}

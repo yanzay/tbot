@@ -26,6 +26,7 @@ func main() {
 
     bot.HandleFunc("/hi", HiHandler)
     bot.HandleFunc("/say {text}", SayHandler)
+    bot.HandleFunc("/sticker", StickerHandler)
 
     bot.HandleDefault(EchoHandler)
 
@@ -45,6 +46,10 @@ func SayHandler(message tbot.Message) {
 func EchoHandler(message tbot.Message) {
     message.Reply(message.Text)
 }
+
+func StickerHandler(message tbot.Message) {
+    message.ReplySticker("sticker.png")
+}
 ```
 
-Now it supports only text messages.
+Now it supports only text messages and stickers.
