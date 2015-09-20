@@ -34,7 +34,7 @@ type ReplyMessage struct {
 	messageType MessageType
 }
 
-func (m *Message) Reply(reply string) {
+func (m Message) Reply(reply string) {
 	message := &ReplyMessage{
 		messageType: MessageText,
 	}
@@ -42,11 +42,11 @@ func (m *Message) Reply(reply string) {
 	m.replies <- message
 }
 
-func (m *Message) Replyf(reply string, values ...interface{}) {
+func (m Message) Replyf(reply string, values ...interface{}) {
 	m.Reply(fmt.Sprintf(reply, values...))
 }
 
-func (m *Message) ReplySticker(filepath string) {
+func (m Message) ReplySticker(filepath string) {
 	file, err := telebot.NewFile(filepath)
 	if err != nil {
 		log.Println("Can't open file %s: %s", filepath, err.Error())

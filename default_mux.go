@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-func DefaultMux(handlers map[string]Handler, path string) (Handler, MessageVars) {
+func DefaultMux(handlers map[string]*Handler, path string) (*Handler, MessageVars) {
 	for pattern, handler := range handlers {
 		vars := parseVariables(pattern)
 		pattern = replaceVariables(pattern)

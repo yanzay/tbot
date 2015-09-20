@@ -10,8 +10,8 @@ import (
 type Server struct {
 	bot            *telebot.Bot
 	mux            Mux
-	handlers       map[string]Handler
-	defaultHandler Handler
+	handlers       map[string]*Handler
+	defaultHandler *Handler
 }
 
 func NewServer(token string) (*Server, error) {
@@ -22,7 +22,7 @@ func NewServer(token string) (*Server, error) {
 
 	server := &Server{
 		bot:      tbot,
-		handlers: make(map[string]Handler),
+		handlers: make(map[string]*Handler),
 		mux:      DefaultMux,
 	}
 
@@ -45,7 +45,7 @@ func (s *Server) processMessage(message telebot.Message) {
 	if handler != nil {
 		m := Message{message, data, make(chan *ReplyMessage), make(chan struct{})}
 		go func() {
-			handler(m)
+			handler.f(m)
 			m.close <- struct{}{}
 		}()
 		for {
@@ -64,19 +64,19 @@ func (s *Server) processMessage(message telebot.Message) {
 	}
 }
 
-func (s *Server) HandleFunc(path string, handler Handler) {
-	s.handlers[path] = handler
+func (s *Server) HandleFunc(path string, handler HandlerFunction, description ...string) {
+	s.handlers[path] = NewHandler(handler, description...)
 }
 
-func (s *Server) Handle(path string, reply string) {
-	handler := func(m Message) {
+func (s *Server) Handle(path string, reply string, description ...string) {
+	f := func(m Message) {
 		m.Reply(reply)
 	}
-	s.HandleFunc(path, handler)
+	s.HandleFunc(path, f, description...)
 }
 
-func (b *Server) HandleDefault(handler Handler) {
-	b.defaultHandler = handler
+func (b *Server) HandleDefault(handler HandlerFunction, description ...string) {
+	b.defaultHandler = NewHandler(handler, description...)
 }
 
 func (s *Server) listenMessages(interval time.Duration) <-chan telebot.Message {
