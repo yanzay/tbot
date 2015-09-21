@@ -56,6 +56,8 @@ func (s *Server) processMessage(message telebot.Message) {
 					s.bot.SendMessage(message.Chat, reply.Text, nil)
 				case MessageSticker:
 					s.bot.SendSticker(message.Chat, &reply.Sticker, nil)
+				case MessagePhoto:
+					s.bot.SendPhoto(message.Chat, reply.photo, nil)
 				}
 			case <-m.close:
 				return

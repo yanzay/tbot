@@ -32,6 +32,7 @@ type Message struct {
 type ReplyMessage struct {
 	telebot.Message
 	messageType MessageType
+	photo       *telebot.Photo
 }
 
 func (m Message) Reply(reply string) {
@@ -56,5 +57,20 @@ func (m Message) ReplySticker(filepath string) {
 		messageType: MessageSticker,
 	}
 	message.Sticker = telebot.Sticker{File: file}
+	m.replies <- message
+}
+
+func (m Message) ReplyPhoto(filepath string, caption ...string) {
+	file, err := telebot.NewFile(filepath)
+	if err != nil {
+		log.Println("Can't open file %s: %s", filepath, err.Error())
+		return
+	}
+	thumb := telebot.Thumbnail{File: file}
+	message := &ReplyMessage{messageType: MessagePhoto}
+	message.photo = &telebot.Photo{Thumbnail: thumb}
+	if len(caption) > 0 {
+		message.photo.Caption = caption[0]
+	}
 	m.replies <- message
 }
