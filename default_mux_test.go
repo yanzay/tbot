@@ -3,10 +3,11 @@ package tbot
 import "testing"
 
 func TestDefaultMux(t *testing.T) {
-	handlers := map[string]Handler{
-		"hi": func(m Message) { m.Reply("hi") },
+	handler := NewHandler(func(m Message) { m.Reply("hi") }, "hi")
+	handlers := map[string]*Handler{
+		"hi": handler,
 	}
-	handler, _ := DefaultMux(handlers, "hi")
+	handler, _ = DefaultMux(handlers, "hi")
 	if handler == nil {
 		t.Fail()
 	}
@@ -21,8 +22,9 @@ func TestReplaceVariables(t *testing.T) {
 }
 
 func TestDefaultMuxWithVariable(t *testing.T) {
-	handlers := map[string]Handler{
-		"/say {text}": func(m Message) { m.Reply("hi") },
+	handler := NewHandler(func(m Message) { m.Reply("hi") }, "/say {text}")
+	handlers := map[string]*Handler{
+		"/say {text}": handler,
 	}
 	handler, data := DefaultMux(handlers, "/say hi")
 	if handler == nil {
@@ -35,8 +37,9 @@ func TestDefaultMuxWithVariable(t *testing.T) {
 }
 
 func TestDefaultMuxWithVariables(t *testing.T) {
-	handlers := map[string]Handler{
-		"/say {some} {text}": func(m Message) { m.Reply("hi") },
+	handler := NewHandler(func(m Message) { m.Reply("hi") }, "/say {some} {text}")
+	handlers := map[string]*Handler{
+		"/say {some} {text}": handler,
 	}
 	_, data := DefaultMux(handlers, "/say something new")
 	if data["some"] != "something" {
