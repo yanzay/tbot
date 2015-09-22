@@ -1,24 +1,17 @@
 package tbot
 
-import (
-	"fmt"
-	"regexp"
-)
+import "regexp"
 
 func DefaultMux(handlers map[string]*Handler, path string) (*Handler, MessageVars) {
-	for pattern, handler := range handlers {
-		vars := parseVariables(pattern)
-		pattern = replaceVariables(pattern)
-		pattern = fmt.Sprintf("^%s$", pattern)
-
-		re := regexp.MustCompile(pattern)
+	for _, handler := range handlers {
+		re := regexp.MustCompile(handler.pattern)
 		matches := re.FindStringSubmatch(path)
 
 		if len(matches) > 0 {
 			messageData := make(map[string]string)
 			matches := matches[1:]
 			for i, match := range matches {
-				messageData[vars[i]] = match
+				messageData[handler.variables[i]] = match
 			}
 			return handler, messageData
 		}

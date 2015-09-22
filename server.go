@@ -67,7 +67,7 @@ func (s *Server) processMessage(message telebot.Message) {
 }
 
 func (s *Server) HandleFunc(path string, handler HandlerFunction, description ...string) {
-	s.handlers[path] = NewHandler(handler, description...)
+	s.handlers[path] = NewHandler(handler, path, description...)
 }
 
 func (s *Server) Handle(path string, reply string, description ...string) {
@@ -78,7 +78,7 @@ func (s *Server) Handle(path string, reply string, description ...string) {
 }
 
 func (b *Server) HandleDefault(handler HandlerFunction, description ...string) {
-	b.defaultHandler = NewHandler(handler, description...)
+	b.defaultHandler = NewHandler(handler, "", description...)
 }
 
 func (s *Server) listenMessages(interval time.Duration) <-chan telebot.Message {
