@@ -1,4 +1,4 @@
-# tbot - Telegram Bot Server
+# tbot - Telegram Bot Server [![Build Status](https://travis-ci.org/yanzay/tbot.svg?branch=master)](https://travis-ci.org/yanzay/tbot)
 
 **tbot** is a bot server built on top of http://github.com/tucnak/telebot
 
