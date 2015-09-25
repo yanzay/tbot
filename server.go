@@ -60,6 +60,8 @@ func (s *Server) processMessage(message telebot.Message) {
 					s.bot.SendPhoto(message.Chat, reply.photo, nil)
 				case MessageAudio:
 					s.bot.SendAudio(message.Chat, reply.audio, nil)
+				case MessageDocument:
+					s.bot.SendDocument(message.Chat, reply.document, nil)
 				}
 			case <-m.close:
 				return
