@@ -33,6 +33,7 @@ type ReplyMessage struct {
 	telebot.Message
 	messageType MessageType
 	photo       *telebot.Photo
+	audio       *telebot.Audio
 }
 
 func (m Message) Reply(reply string) {
@@ -72,5 +73,16 @@ func (m Message) ReplyPhoto(filepath string, caption ...string) {
 	if len(caption) > 0 {
 		message.photo.Caption = caption[0]
 	}
+	m.replies <- message
+}
+
+func (m Message) ReplyAudio(filepath string) {
+	file, err := telebot.NewFile(filepath)
+	if err != nil {
+		log.Println("Can't open file %s: %s", filepath, err.Error())
+		return
+	}
+	audio := telebot.Audio{File: file}
+	message := &ReplyMessage{messageType: MessageAudio, audio: &audio}
 	m.replies <- message
 }
