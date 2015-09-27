@@ -2,8 +2,25 @@ package tbot
 
 import "regexp"
 
-func DefaultMux(handlers map[string]*Handler, path string) (*Handler, MessageVars) {
-	for _, handler := range handlers {
+type DefaultMux struct {
+	handlers       Handlers
+	defaultHandler *Handler
+}
+
+func NewDefaultMux() Mux {
+	return &DefaultMux{handlers: make(Handlers)}
+}
+
+func (dm *DefaultMux) Handlers() Handlers {
+	return dm.handlers
+}
+
+func (dm *DefaultMux) DefaultHandler() *Handler {
+	return dm.defaultHandler
+}
+
+func (dm *DefaultMux) Mux(path string) (*Handler, MessageVars) {
+	for _, handler := range dm.handlers {
 		re := regexp.MustCompile(handler.pattern)
 		matches := re.FindStringSubmatch(path)
 
@@ -16,5 +33,20 @@ func DefaultMux(handlers map[string]*Handler, path string) (*Handler, MessageVar
 			return handler, messageData
 		}
 	}
-	return nil, nil
+	return dm.defaultHandler, nil
+}
+
+func (dm *DefaultMux) HandleFunc(path string, handler HandlerFunction, description ...string) {
+	dm.handlers[path] = NewHandler(handler, path, description...)
+}
+
+func (dm *DefaultMux) Handle(path string, reply string, description ...string) {
+	f := func(m Message) {
+		m.Reply(reply)
+	}
+	dm.HandleFunc(path, f, description...)
+}
+
+func (dm *DefaultMux) HandleDefault(handler HandlerFunction, description ...string) {
+	dm.defaultHandler = NewHandler(handler, "", description...)
 }

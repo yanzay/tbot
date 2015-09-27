@@ -8,10 +8,8 @@ import (
 )
 
 type Server struct {
-	bot            *telebot.Bot
-	mux            Mux
-	handlers       map[string]*Handler
-	defaultHandler *Handler
+	bot *telebot.Bot
+	mux Mux
 }
 
 func NewServer(token string) (*Server, error) {
@@ -21,9 +19,8 @@ func NewServer(token string) (*Server, error) {
 	}
 
 	server := &Server{
-		bot:      tbot,
-		handlers: make(map[string]*Handler),
-		mux:      DefaultMux,
+		bot: tbot,
+		mux: NewDefaultMux(),
 	}
 
 	return server, nil
@@ -38,51 +35,34 @@ func (s *Server) ListenAndServe() {
 
 func (s *Server) processMessage(message telebot.Message) {
 	log.Printf("[TBot] %s %s: %s", message.Sender.FirstName, message.Sender.LastName, message.Text)
-	handler, data := s.mux(s.handlers, message.Text)
+	handler, data := s.mux.Mux(message.Text)
 	if handler == nil {
-		handler = s.defaultHandler
+		return
 	}
-	if handler != nil {
-		m := Message{message, data, make(chan *ReplyMessage), make(chan struct{})}
-		go func() {
-			handler.f(m)
-			m.close <- struct{}{}
-		}()
-		for {
-			select {
-			case reply := <-m.replies:
-				switch reply.messageType {
-				case MessageText:
-					s.bot.SendMessage(message.Chat, reply.Text, nil)
-				case MessageSticker:
-					s.bot.SendSticker(message.Chat, &reply.Sticker, nil)
-				case MessagePhoto:
-					s.bot.SendPhoto(message.Chat, reply.photo, nil)
-				case MessageAudio:
-					s.bot.SendAudio(message.Chat, reply.audio, nil)
-				case MessageDocument:
-					s.bot.SendDocument(message.Chat, reply.document, nil)
-				}
-			case <-m.close:
-				return
+	m := Message{message, data, make(chan *ReplyMessage), make(chan struct{})}
+	go func() {
+		handler.f(m)
+		m.close <- struct{}{}
+	}()
+	for {
+		select {
+		case reply := <-m.replies:
+			switch reply.messageType {
+			case MessageText:
+				s.bot.SendMessage(message.Chat, reply.Text, nil)
+			case MessageSticker:
+				s.bot.SendSticker(message.Chat, &reply.Sticker, nil)
+			case MessagePhoto:
+				s.bot.SendPhoto(message.Chat, reply.photo, nil)
+			case MessageAudio:
+				s.bot.SendAudio(message.Chat, reply.audio, nil)
+			case MessageDocument:
+				s.bot.SendDocument(message.Chat, reply.document, nil)
 			}
+		case <-m.close:
+			return
 		}
 	}
-}
-
-func (s *Server) HandleFunc(path string, handler HandlerFunction, description ...string) {
-	s.handlers[path] = NewHandler(handler, path, description...)
-}
-
-func (s *Server) Handle(path string, reply string, description ...string) {
-	f := func(m Message) {
-		m.Reply(reply)
-	}
-	s.HandleFunc(path, f, description...)
-}
-
-func (b *Server) HandleDefault(handler HandlerFunction, description ...string) {
-	b.defaultHandler = NewHandler(handler, "", description...)
 }
 
 func (s *Server) listenMessages(interval time.Duration) <-chan telebot.Message {

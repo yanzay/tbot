@@ -7,7 +7,7 @@ import (
 
 func (s *Server) HelpHandler(m Message) {
 	handlerNames := make([]string, 0)
-	for handlerName, handler := range s.handlers {
+	for handlerName, handler := range s.mux.Handlers() {
 		var line string
 		line = handlerName
 		if handler.description != "" {
@@ -15,8 +15,8 @@ func (s *Server) HelpHandler(m Message) {
 		}
 		handlerNames = append(handlerNames, line)
 	}
-	if s.defaultHandler != nil && s.defaultHandler.description != "" {
-		defaultLine := fmt.Sprintf("* - %s", s.defaultHandler.description)
+	if s.mux.DefaultHandler() != nil && s.mux.DefaultHandler().description != "" {
+		defaultLine := fmt.Sprintf("* - %s", s.mux.DefaultHandler().description)
 		handlerNames = append(handlerNames, defaultLine)
 	}
 	reply := strings.Join(handlerNames, "\n")
