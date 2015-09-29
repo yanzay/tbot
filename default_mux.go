@@ -2,11 +2,14 @@ package tbot
 
 import "regexp"
 
+// DefaultMux is a default multiplexer
+// Supports parametrized commands
 type DefaultMux struct {
 	handlers       Handlers
 	defaultHandler *Handler
 }
 
+// NewDefaultMux creates new DefaultMux
 func NewDefaultMux() Mux {
 	return &DefaultMux{handlers: make(Handlers)}
 }

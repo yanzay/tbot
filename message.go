@@ -52,7 +52,7 @@ func (m Message) Replyf(reply string, values ...interface{}) {
 func (m Message) ReplySticker(filepath string) {
 	file, err := telebot.NewFile(filepath)
 	if err != nil {
-		log.Println("Can't open file %s: %s", filepath, err.Error())
+		log.Printf("Can't open file %s: %s", filepath, err.Error())
 		return
 	}
 	message := &ReplyMessage{
@@ -65,7 +65,7 @@ func (m Message) ReplySticker(filepath string) {
 func (m Message) ReplyPhoto(filepath string, caption ...string) {
 	file, err := telebot.NewFile(filepath)
 	if err != nil {
-		log.Println("Can't open file %s: %s", filepath, err.Error())
+		log.Printf("Can't open file %s: %s", filepath, err.Error())
 		return
 	}
 	thumb := telebot.Thumbnail{File: file}
@@ -80,7 +80,7 @@ func (m Message) ReplyPhoto(filepath string, caption ...string) {
 func (m Message) ReplyAudio(filepath string) {
 	file, err := telebot.NewFile(filepath)
 	if err != nil {
-		log.Println("Can't open file %s: %s", filepath, err.Error())
+		log.Printf("Can't open file %s: %s", filepath, err.Error())
 		return
 	}
 	audio := telebot.Audio{File: file}
@@ -91,7 +91,7 @@ func (m Message) ReplyAudio(filepath string) {
 func (m Message) ReplyDocument(filepath string) {
 	file, err := telebot.NewFile(filepath)
 	if err != nil {
-		log.Println("Can't open file %s: %s", filepath, err.Error())
+		log.Printf("Can't open file %s: %s", filepath, err.Error())
 		return
 	}
 	doc := telebot.Document{File: file}

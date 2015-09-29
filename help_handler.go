@@ -6,7 +6,7 @@ import (
 )
 
 func (s *Server) HelpHandler(m Message) {
-	handlerNames := make([]string, 0)
+	var handlerNames []string
 	for handlerName, handler := range s.mux.Handlers() {
 		var line string
 		line = handlerName

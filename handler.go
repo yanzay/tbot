@@ -28,7 +28,7 @@ func parse(template string) ([]string, string) {
 }
 
 func parseVariables(pattern string) []string {
-	vars := make([]string, 0)
+	var vars []string
 	re := regexp.MustCompile("{([A-Za-z0-9_]*)}")
 	matches := re.FindAllStringSubmatch(pattern, -1)
 	for _, match := range matches {
