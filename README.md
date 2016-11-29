@@ -1,4 +1,4 @@
-# tbot - Telegram Bot Server [![Build Status](https://travis-ci.org/yanzay/tbot.svg?branch=master)](https://travis-ci.org/yanzay/tbot)
+# tbot - Telegram Bot Server [![Build Status](https://travis-ci.org/yanzay/tbot.svg?branch=master)](https://travis-ci.org/yanzay/tbot) [![Go Report Card](https://goreportcard.com/badge/github.com/yanzay/tbot)](https://goreportcard.com/report/github.com/yanzay/tbot)
 [![GoDoc](https://godoc.org/github.com/yanzay/tbot?status.svg)](https://godoc.org/github.com/yanzay/tbot)
 
 **tbot** is a Telegram bot server.
