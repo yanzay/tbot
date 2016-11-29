@@ -37,7 +37,7 @@ func main() {
 }
 
 func HiHandler(message tbot.Message) {
-    message.Replyf("Hello, %s!", message.Sender.FirstName)
+    message.Replyf("Hello, %s!", message.From.FirstName)
     time.Sleep(1 * time.Second)
     message.Reply("What's up?")
 }
