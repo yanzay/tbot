@@ -4,16 +4,19 @@ import (
 	"log"
 	"time"
 
-	"github.com/tucnak/telebot"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+// Server is a telegram bot server. Looks and feels like net/http.
 type Server struct {
-	bot *telebot.Bot
+	bot *tgbotapi.BotAPI
 	mux Mux
 }
 
+// NewServer creates new Server with Telegram API Token
+// and default /help handler
 func NewServer(token string) (*Server, error) {
-	tbot, err := telebot.NewBot(token)
+	tbot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		return nil, err
 	}
@@ -23,35 +26,47 @@ func NewServer(token string) (*Server, error) {
 		mux: NewDefaultMux(),
 	}
 
+	server.HandleFunc("/help", server.HelpHandler)
+
 	return server, nil
 }
 
-func (s *Server) ListenAndServe() {
-	messages := s.listenMessages(3 * time.Second)
-	for message := range messages {
-		go s.processMessage(message)
+// ListenAndServe starts Server, returns error on failure
+func (s *Server) ListenAndServe() error {
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+	updates, err := s.bot.GetUpdatesChan(u)
+	if err != nil {
+		return err
 	}
+	for update := range updates {
+		go s.processMessage(update.Message)
+	}
+	return nil
 }
 
+// HandleFunc delegates HandleFunc to the current Mux
 func (s *Server) HandleFunc(path string, handler HandlerFunction, description ...string) {
 	s.mux.HandleFunc(path, handler, description...)
 }
 
+// Handle delegates Handle to the current Mux
 func (s *Server) Handle(path string, reply string, description ...string) {
 	s.mux.Handle(path, reply, description...)
 }
 
+// HandleDefault delegates HandleDefault to the current Mux
 func (s *Server) HandleDefault(handler HandlerFunction, description ...string) {
 	s.mux.HandleDefault(handler, description...)
 }
 
-func (s *Server) processMessage(message telebot.Message) {
-	log.Printf("[TBot] %s %s: %s", message.Sender.FirstName, message.Sender.LastName, message.Text)
+func (s *Server) processMessage(message *tgbotapi.Message) {
+	log.Printf("[TBot] %s %s: %s", message.From.FirstName, message.From.LastName, message.Text)
 	handler, data := s.mux.Mux(message.Text)
 	if handler == nil {
 		return
 	}
-	m := Message{message, data, make(chan *ReplyMessage), make(chan struct{})}
+	m := Message{*message, data, make(chan *ReplyMessage), make(chan struct{})}
 	go func() {
 		handler.f(m)
 		m.close <- struct{}{}
@@ -69,25 +84,23 @@ func (s *Server) processMessage(message telebot.Message) {
 	}
 }
 
-func (s *Server) listenMessages(interval time.Duration) <-chan telebot.Message {
-	messages := make(chan telebot.Message)
-	s.bot.Listen(messages, interval)
+func (s *Server) listenMessages(interval time.Duration) <-chan *tgbotapi.Message {
+	messages := make(chan *tgbotapi.Message)
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+	updates, err := s.bot.GetUpdatesChan(u)
+	if err != nil {
+		log.Fatal(err)
+	}
+	go func() {
+		for update := range updates {
+			messages <- update.Message
+		}
+	}()
 	return messages
 }
 
-func (s *Server) dispatchMessage(chat telebot.User, reply *ReplyMessage) error {
-	var err error
-	switch reply.messageType {
-	case MessageText:
-		err = s.bot.SendMessage(chat, reply.Text, nil)
-	case MessageSticker:
-		err = s.bot.SendSticker(chat, &reply.Sticker, nil)
-	case MessagePhoto:
-		err = s.bot.SendPhoto(chat, reply.photo, nil)
-	case MessageAudio:
-		err = s.bot.SendAudio(chat, reply.audio, nil)
-	case MessageDocument:
-		err = s.bot.SendDocument(chat, reply.document, nil)
-	}
+func (s *Server) dispatchMessage(chat *tgbotapi.Chat, reply *ReplyMessage) error {
+	_, err := s.bot.Send(reply.msg)
 	return err
 }

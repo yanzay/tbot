@@ -2,99 +2,69 @@ package tbot
 
 import (
 	"fmt"
-	"log"
 
-	"github.com/tucnak/telebot"
-)
-
-type MessageType int
-
-const (
-	MessageText MessageType = iota
-	MessageSticker
-	MessagePhoto
-	MessageAudio
-	MessageVideo
-	MessageLocation
-	MessageDocument
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type MessageVars map[string]string
 
+// Message is a received message from chat, with parsed variables
 type Message struct {
-	telebot.Message
+	tgbotapi.Message
 	Vars MessageVars
 
 	replies chan *ReplyMessage
 	close   chan struct{}
 }
 
+// ReplyMessage is a bot message
 type ReplyMessage struct {
-	telebot.Message
-	messageType MessageType
-	photo       *telebot.Photo
-	audio       *telebot.Audio
-	document    *telebot.Document
+	msg tgbotapi.Chattable
 }
 
+// Reply to the user with plain text
 func (m Message) Reply(reply string) {
 	message := &ReplyMessage{
-		messageType: MessageText,
+		msg: tgbotapi.NewMessage(m.Chat.ID, reply),
 	}
-	message.Text = reply
 	m.replies <- message
 }
 
+// Replyf is a formatted reply to the user with plain text, with parameters like in Printf
 func (m Message) Replyf(reply string, values ...interface{}) {
 	m.Reply(fmt.Sprintf(reply, values...))
 }
 
 func (m Message) ReplySticker(filepath string) {
-	file, err := telebot.NewFile(filepath)
-	if err != nil {
-		log.Printf("Can't open file %s: %s", filepath, err.Error())
-		return
-	}
-	message := &ReplyMessage{
-		messageType: MessageSticker,
-	}
-	message.Sticker = telebot.Sticker{File: file}
+	message := &ReplyMessage{}
+	msg := tgbotapi.NewStickerUpload(m.Chat.ID, filepath)
+	message.msg = msg
 	m.replies <- message
 }
 
+// ReplyPhoto sends photo to the chat. Has optional caption.
 func (m Message) ReplyPhoto(filepath string, caption ...string) {
-	file, err := telebot.NewFile(filepath)
-	if err != nil {
-		log.Printf("Can't open file %s: %s", filepath, err.Error())
-		return
-	}
-	thumb := telebot.Thumbnail{File: file}
-	message := &ReplyMessage{messageType: MessagePhoto}
-	message.photo = &telebot.Photo{Thumbnail: thumb}
+	message := &ReplyMessage{}
+	msg := tgbotapi.NewPhotoUpload(m.Chat.ID, filepath)
 	if len(caption) > 0 {
-		message.photo.Caption = caption[0]
+		msg.Caption = caption[0]
 	}
+	message.msg = msg
 	m.replies <- message
 }
 
+// ReplyAudio sends audio file to chat
 func (m Message) ReplyAudio(filepath string) {
-	file, err := telebot.NewFile(filepath)
-	if err != nil {
-		log.Printf("Can't open file %s: %s", filepath, err.Error())
-		return
-	}
-	audio := telebot.Audio{File: file}
-	message := &ReplyMessage{messageType: MessageAudio, audio: &audio}
+	message := &ReplyMessage{}
+	msg := tgbotapi.NewAudioUpload(m.Chat.ID, filepath)
+	message.msg = msg
 	m.replies <- message
 }
 
+// ReplyDocument sends generic file (not audio, voice, image) to the chat
 func (m Message) ReplyDocument(filepath string) {
-	file, err := telebot.NewFile(filepath)
-	if err != nil {
-		log.Printf("Can't open file %s: %s", filepath, err.Error())
-		return
-	}
-	doc := telebot.Document{File: file}
-	message := &ReplyMessage{messageType: MessageDocument, document: &doc}
+	message := &ReplyMessage{}
+	msg := tgbotapi.NewDocumentUpload(m.Chat.ID, filepath)
+	message.msg = msg
 	m.replies <- message
 }

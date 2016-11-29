@@ -1,6 +1,7 @@
 # tbot - Telegram Bot Server [![Build Status](https://travis-ci.org/yanzay/tbot.svg?branch=master)](https://travis-ci.org/yanzay/tbot)
+[![GoDoc](https://godoc.org/github.com/yanzay/tbot?status.svg)](https://godoc.org/github.com/yanzay/tbot)
 
-**tbot** is a bot server built on top of http://github.com/tucnak/telebot
+**tbot** is a Telegram bot server.
 
 It feels like net/http Server, so it's easy to use:
 
@@ -31,7 +32,8 @@ func main() {
 
     bot.HandleDefault(EchoHandler)
 
-    bot.ListenAndServe()
+    err = bot.ListenAndServe()
+    log.Fatal(err)
 }
 
 func HiHandler(message tbot.Message) {
@@ -57,4 +59,4 @@ func PhotoHandler(message tbot.Message) {
 }
 ```
 
-Now it supports only text messages, stickers and photos.
+See full documentation here: https://godoc.org/github.com/yanzay/tbot

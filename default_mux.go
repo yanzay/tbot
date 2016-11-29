@@ -2,8 +2,10 @@ package tbot
 
 import "regexp"
 
-// DefaultMux is a default multiplexer
-// Supports parametrized commands
+// DefaultMux is a default multiplexer,
+// supports parametrized commands.
+// Parameters should be enclosed with curly brackets,
+// line in "/say {hi}" - "hi" is a parameter.
 type DefaultMux struct {
 	handlers       Handlers
 	defaultHandler *Handler
@@ -14,7 +16,7 @@ func NewDefaultMux() Mux {
 	return &DefaultMux{handlers: make(Handlers)}
 }
 
-// Handlers returns list of handlers currently in mux
+// Handlers returns list of handlers currently presented in mux
 func (dm *DefaultMux) Handlers() Handlers {
 	return dm.handlers
 }
@@ -33,7 +35,7 @@ func (dm *DefaultMux) Mux(path string) (*Handler, MessageVars) {
 
 		if len(matches) > 0 {
 			messageData := make(map[string]string)
-			matches := matches[1:]
+			matches = matches[1:]
 			for i, match := range matches {
 				messageData[handler.variables[i]] = match
 			}
@@ -43,12 +45,13 @@ func (dm *DefaultMux) Mux(path string) (*Handler, MessageVars) {
 	return dm.defaultHandler, nil
 }
 
-// HandleFunc adds new handler function to mux
+// HandleFunc adds new handler function to mux, "description" is for "/help" handler.
 func (dm *DefaultMux) HandleFunc(path string, handler HandlerFunction, description ...string) {
 	dm.handlers[path] = NewHandler(handler, path, description...)
 }
 
-// Handle is a shortcut for HandleFunc to reply just with text
+// Handle is a shortcut for HandleFunc to reply just with static text,
+// "description" is for "/help" handler.
 func (dm *DefaultMux) Handle(path string, reply string, description ...string) {
 	f := func(m Message) {
 		m.Reply(reply)
@@ -56,7 +59,8 @@ func (dm *DefaultMux) Handle(path string, reply string, description ...string) {
 	dm.HandleFunc(path, f, description...)
 }
 
-// HandleDefault adds new default handler, when nothing matches with message
+// HandleDefault adds new default handler, when nothing matches with message,
+// "description" is for "/help" handler.
 func (dm *DefaultMux) HandleDefault(handler HandlerFunction, description ...string) {
 	dm.defaultHandler = NewHandler(handler, "", description...)
 }

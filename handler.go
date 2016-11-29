@@ -5,6 +5,8 @@ import (
 	"regexp"
 )
 
+// Handler is a struct that represents any message hanlder
+// with handler function, descriptio, pattern and parsed variables
 type Handler struct {
 	f           HandlerFunction
 	description string
@@ -12,6 +14,7 @@ type Handler struct {
 	variables   []string
 }
 
+// NewHandler creates new handler and returns it
 func NewHandler(f func(Message), path string, description ...string) *Handler {
 	handler := &Handler{f: f}
 	handler.variables, handler.pattern = parse(path)
