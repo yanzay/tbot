@@ -2,7 +2,6 @@ package tbot
 
 import (
 	"log"
-	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -82,22 +81,6 @@ func (s *Server) processMessage(message *tgbotapi.Message) {
 			return
 		}
 	}
-}
-
-func (s *Server) listenMessages(interval time.Duration) <-chan *tgbotapi.Message {
-	messages := make(chan *tgbotapi.Message)
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-	updates, err := s.bot.GetUpdatesChan(u)
-	if err != nil {
-		log.Fatal(err)
-	}
-	go func() {
-		for update := range updates {
-			messages <- update.Message
-		}
-	}()
-	return messages
 }
 
 func (s *Server) dispatchMessage(chat *tgbotapi.Chat, reply *ReplyMessage) error {

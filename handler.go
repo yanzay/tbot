@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-// Handler is a struct that represents any message hanlder
+// Handler is a struct that represents any message handler
 // with handler function, descriptio, pattern and parsed variables
 type Handler struct {
 	f           HandlerFunction

@@ -6,6 +6,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+// MessageVars is a parsed message variables lookup table
 type MessageVars map[string]string
 
 // Message is a received message from chat, with parsed variables
@@ -30,11 +31,12 @@ func (m Message) Reply(reply string) {
 	m.replies <- message
 }
 
-// Replyf is a formatted reply to the user with plain text, with parameters like in Printf
+// Replyf is a formatted reply to the user with plain text, with parameters like in fmt.Printf
 func (m Message) Replyf(reply string, values ...interface{}) {
 	m.Reply(fmt.Sprintf(reply, values...))
 }
 
+// ReplySticker sends sticker to the chat.
 func (m Message) ReplySticker(filepath string) {
 	message := &ReplyMessage{}
 	msg := tgbotapi.NewStickerUpload(m.Chat.ID, filepath)
