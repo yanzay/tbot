@@ -50,15 +50,6 @@ func (dm *DefaultMux) HandleFunc(path string, handler HandlerFunction, descripti
 	dm.handlers[path] = NewHandler(handler, path, description...)
 }
 
-// Handle is a shortcut for HandleFunc to reply just with static text,
-// "description" is for "/help" handler.
-func (dm *DefaultMux) Handle(path string, reply string, description ...string) {
-	f := func(m Message) {
-		m.Reply(reply)
-	}
-	dm.HandleFunc(path, f, description...)
-}
-
 // HandleDefault adds new default handler, when nothing matches with message,
 // "description" is for "/help" handler.
 func (dm *DefaultMux) HandleDefault(handler HandlerFunction, description ...string) {
