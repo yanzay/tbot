@@ -15,6 +15,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	whitelist := []string{"user1", "user2"}
+	bot.AddMiddleware(tbot.NewAuth(whitelist))
+
 	bot.Handle("yo", "YO!")
 
 	bot.HandleFunc("/hi", HiHandler)
