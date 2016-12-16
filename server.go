@@ -8,9 +8,12 @@ import (
 
 // Server is a telegram bot server. Looks and feels like net/http.
 type Server struct {
-	bot *tgbotapi.BotAPI
-	mux Mux
+	bot         *tgbotapi.BotAPI
+	mux         Mux
+	middlewares []Middleware
 }
+
+type Middleware func(HandlerFunction) HandlerFunction
 
 // NewServer creates new Server with Telegram API Token
 // and default /help handler
@@ -28,6 +31,10 @@ func NewServer(token string) (*Server, error) {
 	server.HandleFunc("/help", server.HelpHandler)
 
 	return server, nil
+}
+
+func (s *Server) AddMiddleware(mid Middleware) {
+	s.middlewares = append(s.middlewares, mid)
 }
 
 // ListenAndServe starts Server, returns error on failure
@@ -49,9 +56,13 @@ func (s *Server) HandleFunc(path string, handler HandlerFunction, description ..
 	s.mux.HandleFunc(path, handler, description...)
 }
 
-// Handle delegates Handle to the current Mux
+// Handle is a shortcut for HandleFunc to reply just with static text,
+// "description" is for "/help" handler.
 func (s *Server) Handle(path string, reply string, description ...string) {
-	s.mux.Handle(path, reply, description...)
+	f := func(m Message) {
+		m.Reply(reply)
+	}
+	s.HandleFunc(path, f, description...)
 }
 
 // HandleDefault delegates HandleDefault to the current Mux
@@ -65,9 +76,13 @@ func (s *Server) processMessage(message *tgbotapi.Message) {
 	if handler == nil {
 		return
 	}
+	f := handler.f
+	for _, mid := range s.middlewares {
+		f = mid(f)
+	}
 	m := Message{*message, data, make(chan *ReplyMessage), make(chan struct{})}
 	go func() {
-		handler.f(m)
+		f(m)
 		m.close <- struct{}{}
 	}()
 	for {
