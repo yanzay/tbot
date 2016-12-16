@@ -9,53 +9,66 @@ It feels like net/http Server, so it's easy to use:
 package main
 
 import (
-    "log"
-    "os"
-    "time"
+	"log"
+	"os"
+	"time"
 
-    "github.com/yanzay/tbot"
+	"github.com/yanzay/tbot"
 )
 
 func main() {
-    token := os.Getenv("TELEGRAM_TOKEN")
-    bot, err := tbot.NewServer(token)
-    if err != nil {
-        log.Fatal(err)
-    }
+	token := os.Getenv("TELEGRAM_TOKEN")
+	// Create new telegram bot server using token
+	bot, err := tbot.NewServer(token)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    bot.Handle("yo", "YO!")
+	// Use whitelist for Auth middleware, allow to interact only with user1 and user2
+	whitelist := []string{"user1", "user2"}
+	bot.AddMiddleware(tbot.NewAuth(whitelist))
 
-    bot.HandleFunc("/hi", HiHandler)
-    bot.HandleFunc("/say {text}", SayHandler)
-    bot.HandleFunc("/sticker", StickerHandler)
-    bot.HandleFunc("/photo", PhotoHandler)
+	// Yo handler works without slash, simple text response
+	bot.Handle("yo", "YO!")
 
-    bot.HandleDefault(EchoHandler)
+	// Handle with HiHandler function
+	bot.HandleFunc("/hi", HiHandler)
+	// Handler can accept varialbes
+	bot.HandleFunc("/say {text}", SayHandler)
+	// Bot can sand stickers, photos, music
+	bot.HandleFunc("/sticker", StickerHandler)
+	bot.HandleFunc("/photo", PhotoHandler)
 
-    err = bot.ListenAndServe()
-    log.Fatal(err)
+	// Set default handler if you want to process unmatched input
+	bot.HandleDefault(EchoHandler)
+
+	// Start listening for messages
+	err = bot.ListenAndServe()
+	log.Fatal(err)
 }
 
 func HiHandler(message tbot.Message) {
-    message.Replyf("Hello, %s!", message.From.FirstName)
-    time.Sleep(1 * time.Second)
-    message.Reply("What's up?")
+	// Handler can reply with several messages
+	message.Replyf("Hello, %s!", message.From.FirstName)
+	time.Sleep(1 * time.Second)
+	message.Reply("What's up?")
 }
 
 func SayHandler(message tbot.Message) {
-    message.Reply(message.Vars["text"])
+	// Message contain it's varialbes from curly brackets
+	message.Reply(message.Vars["text"])
 }
 
 func EchoHandler(message tbot.Message) {
-    message.Reply(message.Text)
+	message.Reply(message.Text)
 }
 
 func StickerHandler(message tbot.Message) {
-    message.ReplySticker("sticker.png")
+	message.ReplySticker("sticker.png")
 }
 
 func PhotoHandler(message tbot.Message) {
-    message.ReplyPhoto("photo.jpg", "it's me")
+	message.ReplyPhoto("photo.jpg", "it's me")
 }
 ```
 
