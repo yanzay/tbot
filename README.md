@@ -3,6 +3,14 @@
 
 **tbot** is a Telegram bot server.
 
+## Installation
+
+```bash
+go get -u github.com/yanzay/tbot
+```
+
+## Usage
+
 It feels like net/http Server, so it's easy to use:
 
 ```go
