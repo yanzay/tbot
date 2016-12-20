@@ -27,7 +27,7 @@ func main() {
 	bot.HandleFunc("/hi", HiHandler)
 	// Handler can accept varialbes
 	bot.HandleFunc("/say {text}", SayHandler)
-	// Bot can sand stickers, photos, music
+	// Bot can send stickers, photos, music
 	bot.HandleFunc("/sticker", StickerHandler)
 	bot.HandleFunc("/photo", PhotoHandler)
 
