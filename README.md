@@ -81,3 +81,5 @@ func PhotoHandler(message tbot.Message) {
 ```
 
 See full documentation here: https://godoc.org/github.com/yanzay/tbot
+
+Test coverage: https://gocover.io/github.com/yanzay/tbot
