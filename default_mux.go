@@ -5,7 +5,7 @@ import "regexp"
 // DefaultMux is a default multiplexer,
 // supports parametrized commands.
 // Parameters should be enclosed with curly brackets,
-// line in "/say {hi}" - "hi" is a parameter.
+// like in "/say {hi}" - "hi" is a parameter.
 type DefaultMux struct {
 	handlers       Handlers
 	defaultHandler *Handler
