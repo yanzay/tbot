@@ -53,3 +53,38 @@ func TestParseVariables(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestMuxDefaultHandler(t *testing.T) {
+	mux := NewDefaultMux()
+	f := func(m Message) { m.Reply("default") }
+	mux.HandleDefault(f)
+	handler, err := mux.Mux("some text here")
+	if err != nil {
+		t.Fail()
+	}
+	if handler == nil {
+		t.Fail()
+	}
+}
+
+func TestDefaultHandler(t *testing.T) {
+	mux := NewDefaultMux()
+	mux.HandleDefault(func(m Message) {})
+	handler := mux.DefaultHandler()
+	if handler == nil {
+		t.Fail()
+	}
+}
+
+func TestHandlers(t *testing.T) {
+	mux := NewDefaultMux()
+	mux.HandleFunc("/hi", func(m Message) {})
+	mux.HandleFunc("/test", func(m Message) {})
+	handlers := mux.Handlers()
+	if len(handlers) != 2 {
+		t.Fail()
+	}
+	if handlers["/hi"] == nil {
+		t.Fail()
+	}
+}
