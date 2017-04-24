@@ -31,6 +31,9 @@ func main() {
 	bot.HandleFunc("/sticker", StickerHandler)
 	bot.HandleFunc("/photo", PhotoHandler)
 
+	// Use file handler to handle user uploads
+	bot.HandleFile(FileHandler)
+
 	// Set default handler if you want to process unmatched input
 	bot.HandleDefault(EchoHandler)
 
@@ -61,4 +64,13 @@ func StickerHandler(message tbot.Message) {
 
 func PhotoHandler(message tbot.Message) {
 	message.ReplyPhoto("photo.jpg", "it's me")
+}
+
+func FileHandler(message tbot.Message) {
+	err := message.Download("./uploads")
+	if err != nil {
+		message.Replyf("Error handling file: %q", err)
+		return
+	}
+	message.Reply("Thanks for uploading!")
 }

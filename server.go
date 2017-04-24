@@ -66,15 +66,34 @@ func (s *Server) Handle(path string, reply string, description ...string) {
 	s.HandleFunc(path, f, description...)
 }
 
+func (s *Server) HandleFile(handler HandlerFunction, description ...string) {
+	s.mux.HandleFile(handler, description...)
+}
+
 // HandleDefault delegates HandleDefault to the current Mux
 func (s *Server) HandleDefault(handler HandlerFunction, description ...string) {
 	s.mux.HandleDefault(handler, description...)
 }
 
 func (s *Server) processMessage(message *tgbotapi.Message) {
+	if message == nil {
+		return
+	}
 	log.Printf("[TBot] %s %s: %s", message.From.FirstName, message.From.LastName, message.Text)
-	message.Text = s.trimBotName(message.Text)
-	handler, data := s.mux.Mux(message.Text)
+	var handler *Handler
+	var data MessageVars
+	if message.Document != nil {
+		url, err := s.bot.GetFileDirectURL(message.Document.FileID)
+		if err != nil {
+			log.Printf("[TBot] Error: %s", err.Error())
+			return
+		}
+		handler = s.mux.FileHandler()
+		data = map[string]string{"url": url}
+	} else {
+    message.Text = s.trimBotName(message.Text)
+		handler, data = s.mux.Mux(message.Text)
+	}
 	if handler == nil {
 		return
 	}
