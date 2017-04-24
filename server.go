@@ -2,6 +2,7 @@ package tbot
 
 import (
 	"log"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -72,6 +73,7 @@ func (s *Server) HandleDefault(handler HandlerFunction, description ...string) {
 
 func (s *Server) processMessage(message *tgbotapi.Message) {
 	log.Printf("[TBot] %s %s: %s", message.From.FirstName, message.From.LastName, message.Text)
+	message.Text = s.trimBotName(message.Text)
 	handler, data := s.mux.Mux(message.Text)
 	if handler == nil {
 		return
@@ -90,7 +92,7 @@ func (s *Server) processMessage(message *tgbotapi.Message) {
 		case reply := <-m.replies:
 			err := s.dispatchMessage(message.Chat, reply)
 			if err != nil {
-				log.Println(err)
+				log.Printf("Error dispatching message: %q", err)
 			}
 		case <-m.close:
 			return
@@ -101,4 +103,13 @@ func (s *Server) processMessage(message *tgbotapi.Message) {
 func (s *Server) dispatchMessage(chat *tgbotapi.Chat, reply *ReplyMessage) error {
 	_, err := s.bot.Send(reply.msg)
 	return err
+}
+
+func (s *Server) trimBotName(message string) string {
+	parts := strings.SplitN(message, " ", 2)
+	command := parts[0]
+	command = strings.TrimSuffix(command, "@"+s.bot.Self.UserName)
+	command = strings.TrimSuffix(command, "@"+s.bot.Self.FirstName)
+	parts[0] = command
+	return strings.Join(parts, " ")
 }
