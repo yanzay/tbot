@@ -2,6 +2,11 @@ package tbot
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -69,4 +74,35 @@ func (m Message) ReplyDocument(filepath string) {
 	msg := tgbotapi.NewDocumentUpload(m.Chat.ID, filepath)
 	message.msg = msg
 	m.replies <- message
+}
+
+// Download file from FileHandler
+func (m Message) Download(dir string) error {
+	if m.Document == nil {
+		return fmt.Errorf("Nothing to download")
+	}
+
+	fileName := m.Document.FileName
+	if fileName == "" {
+		tokens := strings.Split(m.Vars["url"], "/")
+		fileName = tokens[len(tokens)-1]
+	}
+
+	file, err := os.Create(filepath.Join(dir, fileName))
+	if err != nil {
+		return fmt.Errorf("Error creating file: %q", err)
+	}
+	defer file.Close()
+
+	resp, err := http.Get(m.Vars["url"])
+	if err != nil {
+		return fmt.Errorf("Error downloading from %s: %q", m.Vars["url"], err)
+	}
+	defer resp.Body.Close()
+
+	_, err = io.Copy(file, resp.Body)
+	if err != nil {
+		return fmt.Errorf("[Tbot] Error downloading file: %q", err)
+	}
+	return nil
 }

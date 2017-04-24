@@ -75,6 +75,9 @@ func (s *Server) HandleDefault(handler HandlerFunction, description ...string) {
 }
 
 func (s *Server) processMessage(message *tgbotapi.Message) {
+	if message == nil {
+		return
+	}
 	log.Printf("[TBot] %s %s: %s", message.From.FirstName, message.From.LastName, message.Text)
 	var handler *Handler
 	var data MessageVars
