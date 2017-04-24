@@ -12,8 +12,10 @@ type Handlers map[string]*Handler
 type Mux interface {
 	Mux(string) (*Handler, MessageVars)
 	HandleFunc(string, HandlerFunction, ...string)
+	HandleFile(HandlerFunction, ...string)
 	HandleDefault(HandlerFunction, ...string)
 
 	Handlers() Handlers
 	DefaultHandler() *Handler
+	FileHandler() *Handler
 }

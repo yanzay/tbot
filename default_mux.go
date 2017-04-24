@@ -8,6 +8,7 @@ import "regexp"
 // like in "/say {hi}" - "hi" is a parameter.
 type DefaultMux struct {
 	handlers       Handlers
+	fileHandler    *Handler
 	defaultHandler *Handler
 }
 
@@ -24,6 +25,10 @@ func (dm *DefaultMux) Handlers() Handlers {
 // DefaultHandler returns default handler, nil if it's not set
 func (dm *DefaultMux) DefaultHandler() *Handler {
 	return dm.defaultHandler
+}
+
+func (dm *DefaultMux) FileHandler() *Handler {
+	return dm.fileHandler
 }
 
 // Mux takes message content and returns corresponding handler
@@ -54,4 +59,8 @@ func (dm *DefaultMux) HandleFunc(path string, handler HandlerFunction, descripti
 // "description" is for "/help" handler.
 func (dm *DefaultMux) HandleDefault(handler HandlerFunction, description ...string) {
 	dm.defaultHandler = NewHandler(handler, "", description...)
+}
+
+func (dm *DefaultMux) HandleFile(handler HandlerFunction, description ...string) {
+	dm.fileHandler = NewHandler(handler, "", description...)
 }

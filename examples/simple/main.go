@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -30,6 +31,8 @@ func main() {
 	// Bot can send stickers, photos, music
 	bot.HandleFunc("/sticker", StickerHandler)
 	bot.HandleFunc("/photo", PhotoHandler)
+
+	bot.HandleFile(FileHandler)
 
 	// Set default handler if you want to process unmatched input
 	bot.HandleDefault(EchoHandler)
@@ -61,4 +64,9 @@ func StickerHandler(message tbot.Message) {
 
 func PhotoHandler(message tbot.Message) {
 	message.ReplyPhoto("photo.jpg", "it's me")
+}
+
+func FileHandler(message tbot.Message) {
+	message.Reply(message.Document.FileID)
+	message.Reply(fmt.Sprint(message.Vars["url"]))
 }
