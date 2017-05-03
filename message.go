@@ -28,11 +28,19 @@ type ReplyMessage struct {
 	msg tgbotapi.Chattable
 }
 
+type Option func(*tgbotapi.MessageConfig)
+
+var DisablePreview = func(msg *tgbotapi.MessageConfig) {
+	msg.DisableWebPagePreview = true
+}
+
 // Reply to the user with plain text
-func (m Message) Reply(reply string) {
-	message := &ReplyMessage{
-		msg: tgbotapi.NewMessage(m.Chat.ID, reply),
+func (m Message) Reply(reply string, options ...Option) {
+	msg := tgbotapi.NewMessage(m.Chat.ID, reply)
+	for _, option := range options {
+		option(&msg)
 	}
+	message := &ReplyMessage{msg: msg}
 	m.replies <- message
 }
 
