@@ -91,7 +91,7 @@ func (s *Server) processMessage(message *tgbotapi.Message) {
 		handler = s.mux.FileHandler()
 		data = map[string]string{"url": url}
 	} else {
-    message.Text = s.trimBotName(message.Text)
+		message.Text = s.trimBotName(message.Text)
 		handler, data = s.mux.Mux(message.Text)
 	}
 	if handler == nil {
