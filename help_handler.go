@@ -17,6 +17,10 @@ func (s *Server) HelpHandler(m Message) {
 		}
 		handlerNames = append(handlerNames, line)
 	}
+	if s.mux.FileHandler() != nil && s.mux.FileHandler().description != "" {
+		fileLine := fmt.Sprintf("*file* - %s", s.mux.FileHandler().description)
+		handlerNames = append(handlerNames, fileLine)
+	}
 	if s.mux.DefaultHandler() != nil && s.mux.DefaultHandler().description != "" {
 		defaultLine := fmt.Sprintf("* - %s", s.mux.DefaultHandler().description)
 		handlerNames = append(handlerNames, defaultLine)
