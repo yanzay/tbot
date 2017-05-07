@@ -40,16 +40,3 @@ func TestAddMiddleware(t *testing.T) {
 		t.Fail()
 	}
 }
-
-func TestProcessMessage(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			t.Fail()
-		}
-	}()
-	server, _ := NewServer(TestToken)
-	server.HandleDefault(func(m Message) { m.Reply("hi") })
-	server.Handle("/hi", "handled")
-	message := mockMessage().Message
-	server.processMessage(&message)
-}

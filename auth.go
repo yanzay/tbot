@@ -2,9 +2,9 @@ package tbot
 
 func NewAuth(whitelist []string) Middleware {
 	return func(f HandlerFunction) HandlerFunction {
-		return func(m Message) {
+		return func(m *Message) {
 			for _, name := range whitelist {
-				if m.From.UserName == name {
+				if m.From == name {
 					f(m)
 					return
 				}
@@ -14,6 +14,6 @@ func NewAuth(whitelist []string) Middleware {
 	}
 }
 
-func AccessDenied(m Message) {
+func AccessDenied(m *Message) {
 	m.Replyf("Access denied for user %s", m.From.UserName)
 }

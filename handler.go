@@ -15,7 +15,7 @@ type Handler struct {
 }
 
 // NewHandler creates new handler and returns it
-func NewHandler(f func(Message), path string, description ...string) *Handler {
+func NewHandler(f func(*Message), path string, description ...string) *Handler {
 	handler := &Handler{f: f}
 	handler.variables, handler.pattern = parse(path)
 	if len(description) > 0 {

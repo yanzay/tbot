@@ -71,6 +71,6 @@ func TestReplyDocument(t *testing.T) {
 func mockMessage() Message {
 	chat := &tgbotapi.Chat{}
 	user := &tgbotapi.User{UserName: "me"}
-	m := Message{tgbotapi.Message{Chat: chat, From: user}, map[string]string{}, make(chan *ReplyMessage), make(chan struct{})}
+	m := Message{tgbotapi.Message{Chat: chat, From: user}, map[string]string{}, make(chan *ReplyMessage)}
 	return m
 }

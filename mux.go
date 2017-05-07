@@ -1,7 +1,7 @@
 package tbot
 
 // HandlerFunction is a function that can process incoming messages
-type HandlerFunction func(Message)
+type HandlerFunction func(*Message)
 
 // Handlers is a lookup table of handlers,
 // key - string pattern
