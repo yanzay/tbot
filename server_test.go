@@ -10,33 +10,33 @@ const (
 func TestNewServerSuccess(t *testing.T) {
 	server, err := NewServer(TestToken)
 	if err != nil {
-		t.Fail()
+		t.Error(err)
 	}
 	if server == nil {
-		t.Fail()
+		t.Error("Server is nil")
 	}
 	if server.mux == nil {
-		t.Fail()
+		t.Error("Server mux is nil")
 	}
 }
 
 func TestNewServerFail(t *testing.T) {
 	server, err := NewServer(InvalidToken)
 	if err == nil {
-		t.Fail()
+		t.Error("Invalid token should return error")
 	}
 	if server != nil {
-		t.Fail()
+		t.Error("Invalid token should return nil server")
 	}
 }
 
 func TestAddMiddleware(t *testing.T) {
 	server := &Server{}
 	if len(server.middlewares) > 0 {
-		t.Fail()
+		t.Error("Middleware list should be empty by default")
 	}
 	server.AddMiddleware(func(HandlerFunction) HandlerFunction { return nil })
 	if len(server.middlewares) != 1 {
-		t.Fail()
+		t.Error("AddMiddleware should add new middleware")
 	}
 }
