@@ -15,5 +15,5 @@ func NewAuth(whitelist []string) Middleware {
 }
 
 func AccessDenied(m *Message) {
-	m.Replyf("Access denied for user %s", m.From.UserName)
+	m.Replyf("Access denied for user %s", m.From)
 }

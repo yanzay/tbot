@@ -16,6 +16,6 @@ type Message struct {
 	Caption        string
 	Replies        chan *Message
 	From           string
-	ChatID         string
+	ChatID         int64
 	DisablePreview bool
 }

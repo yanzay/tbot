@@ -7,7 +7,7 @@ import (
 	"github.com/yanzay/tbot/adapter"
 )
 
-func (s *Server) processMessage(message *adapter.Message) {
+func (s *Server) processMessage(message *Message) {
 	if message == nil {
 		return
 	}
@@ -20,11 +20,12 @@ func (s *Server) processMessage(message *adapter.Message) {
 		f = mid(f)
 	}
 	go s.messageLoop(message.Replies)
-	f(&Message{Message: message})
+	message.Vars = data
+	f(message)
 	close(message.Replies)
 }
 
-func (s *Server) chooseHandler(message *adapter.Message) (*Handler, MessageVars) {
+func (s *Server) chooseHandler(message *Message) (*Handler, MessageVars) {
 	var handler *Handler
 	var data MessageVars
 	if message.Type == adapter.MessageDocument {

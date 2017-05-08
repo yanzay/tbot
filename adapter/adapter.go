@@ -23,7 +23,8 @@ func (b *Bot) GetFileDirectURL(fileID string) (string, error) {
 }
 
 //func (b *Bot) Send(c tgbotapi.Chattable) error {
-func (b *Bot) Send(c tgbotapi.Chattable) error {
+func (b *Bot) Send(m *Message) error {
+	c := chattableFromMessage(m)
 	_, err := b.tbot.Send(c)
 	return err
 }
@@ -65,4 +66,14 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *Mess
 			messages <- &Message{Type: MessageText, Data: update.Message.Text}
 		}
 	}
+}
+
+func chattableFromMessage(m *Message) tgbotapi.Chattable {
+	switch m.Type {
+	case MessageText:
+		return tgbotapi.NewMessage(m.ChatID, m.Data)
+	case MessageSticker:
+		return tgbotapi.NewStickerUpload(m.ChatID, m.Data)
+	}
+	return nil
 }

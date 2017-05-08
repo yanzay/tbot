@@ -40,7 +40,7 @@ func (s *Server) ListenAndServe() error {
 		return err
 	}
 	for update := range updates {
-		go s.processMessage(&Message{msg: update})
+		go s.processMessage(&Message{Message: update})
 	}
 	return nil
 }
@@ -53,7 +53,7 @@ func (s *Server) HandleFunc(path string, handler HandlerFunction, description ..
 // Handle is a shortcut for HandleFunc to reply just with static text,
 // "description" is for "/help" handler.
 func (s *Server) Handle(path string, reply string, description ...string) {
-	f := func(m Message) {
+	f := func(m *Message) {
 		m.Reply(reply)
 	}
 	s.HandleFunc(path, f, description...)

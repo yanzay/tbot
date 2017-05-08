@@ -4,7 +4,7 @@ import "testing"
 
 func TestDefaultMux(t *testing.T) {
 	mux := NewDefaultMux()
-	mux.HandleFunc("hi", func(m Message) { m.Reply("hi") }, "hi")
+	mux.HandleFunc("hi", func(m *Message) { m.Reply("hi") }, "hi")
 	handler, _ := mux.Mux("hi")
 	if handler == nil {
 		t.Fail()
@@ -21,7 +21,7 @@ func TestReplaceVariables(t *testing.T) {
 
 func TestDefaultMuxWithVariable(t *testing.T) {
 	mux := NewDefaultMux()
-	mux.HandleFunc("/say {text}", func(m Message) { m.Reply("hi") })
+	mux.HandleFunc("/say {text}", func(m *Message) { m.Reply("hi") })
 	handler, data := mux.Mux("/say hi")
 	if handler == nil {
 		t.Fail()
@@ -33,7 +33,7 @@ func TestDefaultMuxWithVariable(t *testing.T) {
 
 func TestDefaultMuxWithVariables(t *testing.T) {
 	mux := NewDefaultMux()
-	mux.HandleFunc("/say {some} {text}", func(m Message) { m.Reply("hi") })
+	mux.HandleFunc("/say {some} {text}", func(m *Message) { m.Reply("hi") })
 	_, data := mux.Mux("/say something new")
 	if data["some"] != "something" {
 		t.Fail()
@@ -56,7 +56,7 @@ func TestParseVariables(t *testing.T) {
 
 func TestMuxDefaultHandler(t *testing.T) {
 	mux := NewDefaultMux()
-	f := func(m Message) { m.Reply("default") }
+	f := func(m *Message) { m.Reply("default") }
 	mux.HandleDefault(f)
 	handler, err := mux.Mux("some text here")
 	if err != nil {
@@ -69,7 +69,7 @@ func TestMuxDefaultHandler(t *testing.T) {
 
 func TestDefaultHandler(t *testing.T) {
 	mux := NewDefaultMux()
-	mux.HandleDefault(func(m Message) {})
+	mux.HandleDefault(func(m *Message) {})
 	handler := mux.DefaultHandler()
 	if handler == nil {
 		t.Fail()
@@ -78,8 +78,8 @@ func TestDefaultHandler(t *testing.T) {
 
 func TestHandlers(t *testing.T) {
 	mux := NewDefaultMux()
-	mux.HandleFunc("/hi", func(m Message) {})
-	mux.HandleFunc("/test", func(m Message) {})
+	mux.HandleFunc("/hi", func(m *Message) {})
+	mux.HandleFunc("/test", func(m *Message) {})
 	handlers := mux.Handlers()
 	if len(handlers) != 2 {
 		t.Fail()
