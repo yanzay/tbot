@@ -3,14 +3,14 @@ package tbot
 import "testing"
 
 const (
-	TestToken    = "153667468:AAHlSHlMqSt1f_uFmVRJbm5gntu2HI4WW8I"
+	TestToken    = "TEST:TOKEN"
 	InvalidToken = "invalid"
 )
 
 func TestNewServerSuccess(t *testing.T) {
 	server, err := NewServer(TestToken)
 	if err != nil {
-		t.Error(err)
+		t.Errorf("Error creating server: %s", err)
 	}
 	if server == nil {
 		t.Error("Server is nil")

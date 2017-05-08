@@ -11,10 +11,14 @@ type Server struct {
 
 type Middleware func(HandlerFunction) HandlerFunction
 
+var createBot = func(token string) (*adapter.Bot, error) {
+	return adapter.CreateBot(token)
+}
+
 // NewServer creates new Server with Telegram API Token
 // and default /help handler
 func NewServer(token string) (*Server, error) {
-	tbot, err := adapter.CreateBot(token)
+	tbot, err := createBot(token)
 	if err != nil {
 		return nil, err
 	}
