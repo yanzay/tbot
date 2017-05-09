@@ -8,13 +8,12 @@ go:
   - 1.8
   - tip
 
-before_install:
-  - go get -u github.com/mattn/goveralls
-
 install:
   - go get github.com/yanzay/log
   - go get github.com/go-telegram-bot-api/telegram-bot-api
 
 script:
-  - go test -v -race -cover ./...
-  - $HOME/gopath/bin/goveralls -service=travis-ci
+  - go test -v -race -coverprofile=coverage.txt -covermode=atomic
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
