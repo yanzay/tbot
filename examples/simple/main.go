@@ -1,10 +1,10 @@
 package main
 
 import (
+	"log"
 	"os"
 	"time"
 
-	"github.com/yanzay/log"
 	"github.com/yanzay/tbot"
 )
 

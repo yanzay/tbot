@@ -13,6 +13,7 @@ go get -u github.com/yanzay/tbot
 
 It feels like net/http Server, so it's easy to use:
 
+[embedmd]:# (examples/simple/main.go)
 ```go
 package main
 
@@ -33,7 +34,7 @@ func main() {
 	}
 
 	// Use whitelist for Auth middleware, allow to interact only with user1 and user2
-	whitelist := []string{"user1", "user2"}
+	whitelist := []string{"yanzay", "user2"}
 	bot.AddMiddleware(tbot.NewAuth(whitelist))
 
 	// Yo handler works without slash, simple text response
@@ -47,6 +48,9 @@ func main() {
 	bot.HandleFunc("/sticker", StickerHandler)
 	bot.HandleFunc("/photo", PhotoHandler)
 
+	// Use file handler to handle user uploads
+	bot.HandleFile(FileHandler)
+
 	// Set default handler if you want to process unmatched input
 	bot.HandleDefault(EchoHandler)
 
@@ -55,28 +59,37 @@ func main() {
 	log.Fatal(err)
 }
 
-func HiHandler(message tbot.Message) {
+func HiHandler(message *tbot.Message) {
 	// Handler can reply with several messages
-	message.Replyf("Hello, %s!", message.From.FirstName)
+	message.Replyf("Hello, %s!", message.From)
 	time.Sleep(1 * time.Second)
 	message.Reply("What's up?")
 }
 
-func SayHandler(message tbot.Message) {
+func SayHandler(message *tbot.Message) {
 	// Message contain it's varialbes from curly brackets
 	message.Reply(message.Vars["text"])
 }
 
-func EchoHandler(message tbot.Message) {
-	message.Reply(message.Text)
+func EchoHandler(message *tbot.Message) {
+	message.Reply(message.Text())
 }
 
-func StickerHandler(message tbot.Message) {
+func StickerHandler(message *tbot.Message) {
 	message.ReplySticker("sticker.png")
 }
 
-func PhotoHandler(message tbot.Message) {
+func PhotoHandler(message *tbot.Message) {
 	message.ReplyPhoto("photo.jpg", "it's me")
+}
+
+func FileHandler(message *tbot.Message) {
+	err := message.Download("./uploads")
+	if err != nil {
+		message.Replyf("Error handling file: %q", err)
+		return
+	}
+	message.Reply("Thanks for uploading!")
 }
 ```
 
