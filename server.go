@@ -1,6 +1,8 @@
 package tbot
 
-import "github.com/yanzay/tbot/adapter"
+import (
+	"github.com/yanzay/tbot/adapter"
+)
 
 // Server is a telegram bot server. Looks and feels like net/http.
 type Server struct {

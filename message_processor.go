@@ -1,9 +1,9 @@
 package tbot
 
 import (
-	"log"
 	"strings"
 
+	"github.com/yanzay/log"
 	"github.com/yanzay/tbot/adapter"
 )
 
