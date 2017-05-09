@@ -6,14 +6,14 @@ import (
 
 // Server is a telegram bot server. Looks and feels like net/http.
 type Server struct {
-	bot         *adapter.Bot
+	bot         adapter.BotAdapter
 	mux         Mux
 	middlewares []Middleware
 }
 
 type Middleware func(HandlerFunction) HandlerFunction
 
-var createBot = func(token string) (*adapter.Bot, error) {
+var createBot = func(token string) (adapter.BotAdapter, error) {
 	return adapter.CreateBot(token)
 }
 

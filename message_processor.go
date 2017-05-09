@@ -41,15 +41,11 @@ func (s *Server) chooseHandler(message *Message) (*Handler, MessageVars) {
 
 func (s *Server) messageLoop(replies <-chan *adapter.Message) {
 	for reply := range replies {
-		err := s.dispatchMessage(reply)
+		err := s.bot.Send(reply)
 		if err != nil {
-			log.Printf("Error dispatching message: %q", err)
+			log.Printf("Error sending message: %q", err)
 		}
 	}
-}
-
-func (s *Server) dispatchMessage(reply *adapter.Message) error {
-	return s.bot.Send(reply)
 }
 
 func (s *Server) trimBotName(message string) string {

@@ -7,20 +7,24 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+type BotAdapter interface {
+	Send(*Message) error
+	GetUpdatesChan() (<-chan *Message, error)
+	GetFileDirectURL(string) (string, error)
+	GetUserName() string
+	GetFirstName() string
+}
+
 type Bot struct {
 	tbot *tgbotapi.BotAPI
 }
 
-func CreateBot(token string) (*Bot, error) {
+func CreateBot(token string) (BotAdapter, error) {
 	tbot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		return nil, err
 	}
 	return &Bot{tbot: tbot}, nil
-}
-
-func (b *Bot) GetFileDirectURL(fileID string) (string, error) {
-	return b.tbot.GetFileDirectURL(fileID)
 }
 
 func (b *Bot) Send(m *Message) error {
@@ -30,14 +34,6 @@ func (b *Bot) Send(m *Message) error {
 		return err
 	}
 	return fmt.Errorf("Trying to send nil chattable. Message: %v", m)
-}
-
-func (b *Bot) GetUserName() string {
-	return b.tbot.Self.UserName
-}
-
-func (b *Bot) GetFirstName() string {
-	return b.tbot.Self.FirstName
 }
 
 func (b *Bot) GetUpdatesChan() (<-chan *Message, error) {
@@ -50,6 +46,18 @@ func (b *Bot) GetUpdatesChan() (<-chan *Message, error) {
 	messages := make(chan *Message)
 	go b.adaptUpdates(updates, messages)
 	return messages, nil
+}
+
+func (b *Bot) GetFileDirectURL(fileID string) (string, error) {
+	return b.tbot.GetFileDirectURL(fileID)
+}
+
+func (b *Bot) GetUserName() string {
+	return b.tbot.Self.UserName
+}
+
+func (b *Bot) GetFirstName() string {
+	return b.tbot.Self.FirstName
 }
 
 func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *Message) {
