@@ -7,11 +7,10 @@ import (
 
 // HelpHandler is a default handler for /help,
 // shows available commands and their description
-func (s *Server) HelpHandler(m Message) {
+func (s *Server) HelpHandler(m *Message) {
 	var handlerNames []string
 	for handlerName, handler := range s.mux.Handlers() {
-		var line string
-		line = handlerName
+		line := handlerName
 		if handler.description != "" {
 			line = fmt.Sprintf("%s - %s", line, handler.description)
 		}
