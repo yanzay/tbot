@@ -44,7 +44,7 @@ func (*mockBot) GetFirstName() string {
 
 func TestTextReply(t *testing.T) {
 	setup := func(s *Server) {
-		s.HandleFunc("/hi", func(m *Message) { m.Reply("hi") })
+		s.Handle("/hi", "hi")
 	}
 	requestResponse(t, setup, "/hi", adapter.MessageText, "hi", adapter.MessageText)
 }
