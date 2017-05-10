@@ -60,6 +60,13 @@ func TestStickerReply(t *testing.T) {
 	requestResponse(t, setup, "/sticker", adapter.MessageText, "sticker.png", adapter.MessageSticker)
 }
 
+func TestDocumentUpload(t *testing.T) {
+	setup := func(s *Server) {
+		s.HandleFile(func(m *Message) { m.Download("uploads"); m.Reply("OK") })
+	}
+	requestResponse(t, setup, "LICENSE", adapter.MessageDocument, "OK", adapter.MessageText)
+}
+
 func requestResponse(t *testing.T, setup func(*Server), inData string, inType adapter.MessageType, outData string, outType adapter.MessageType) {
 	inputMessages = make(chan *adapter.Message)
 	defer close(inputMessages)
