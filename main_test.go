@@ -34,10 +34,6 @@ func (*mockBot) GetUpdatesChan() (<-chan *adapter.Message, error) {
 	return inputMessages, nil
 }
 
-func (*mockBot) GetFileDirectURL(string) (string, error) {
-	return "", nil
-}
-
 func (*mockBot) GetUserName() string {
 	return "TestUserName"
 }
@@ -62,9 +58,17 @@ func TestStickerReply(t *testing.T) {
 
 func TestDocumentUpload(t *testing.T) {
 	setup := func(s *Server) {
-		s.HandleFile(func(m *Message) { m.Download("uploads"); m.Reply("OK") })
+		s.HandleFile(func(m *Message) {
+			err := m.Download("uploads")
+			if err != nil {
+				t.Errorf("Error downloading file: %q", err)
+			}
+			m.Reply("OK")
+		})
 	}
-	requestResponse(t, setup, "LICENSE", adapter.MessageDocument, "OK", adapter.MessageText)
+	requestResponse(t, setup,
+		"https://raw.githubusercontent.com/yanzay/tbot/master/LICENSE",
+		adapter.MessageDocument, "OK", adapter.MessageText)
 }
 
 func requestResponse(t *testing.T, setup func(*Server), inData string, inType adapter.MessageType, outData string, outType adapter.MessageType) {

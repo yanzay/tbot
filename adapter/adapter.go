@@ -10,7 +10,6 @@ import (
 type BotAdapter interface {
 	Send(*Message) error
 	GetUpdatesChan() (<-chan *Message, error)
-	GetFileDirectURL(string) (string, error)
 	GetUserName() string
 	GetFirstName() string
 }
@@ -48,10 +47,6 @@ func (b *Bot) GetUpdatesChan() (<-chan *Message, error) {
 	return messages, nil
 }
 
-func (b *Bot) GetFileDirectURL(fileID string) (string, error) {
-	return b.tbot.GetFileDirectURL(fileID)
-}
-
 func (b *Bot) GetUserName() string {
 	return b.tbot.Self.UserName
 }
@@ -70,7 +65,7 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *Mess
 		}
 		switch {
 		case update.Message.Document != nil:
-			message.Data, err = b.GetFileDirectURL(update.Message.Document.FileID)
+			message.Data, err = b.tbot.GetFileDirectURL(update.Message.Document.FileID)
 			if err != nil {
 				log.Println(err)
 				continue

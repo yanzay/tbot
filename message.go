@@ -98,6 +98,10 @@ func (m *Message) Download(dir string) error {
 		return fmt.Errorf("Nothing to download")
 	}
 
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, 0755)
+	}
+
 	tokens := strings.Split(m.Vars["url"], "/")
 	fileName := tokens[len(tokens)-1]
 
