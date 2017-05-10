@@ -1,7 +1,7 @@
 package tbot
 
 import (
-	"github.com/yanzay/tbot/adapter"
+	"github.com/yanzay/tbot/internal/adapter"
 )
 
 // Server is a telegram bot server. Looks and feels like net/http.

@@ -3,7 +3,7 @@ package tbot
 import (
 	"testing"
 
-	"github.com/yanzay/tbot/adapter"
+	"github.com/yanzay/tbot/internal/adapter"
 )
 
 func TestReply(t *testing.T) {

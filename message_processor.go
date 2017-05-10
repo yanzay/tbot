@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/yanzay/log"
-	"github.com/yanzay/tbot/adapter"
+	"github.com/yanzay/tbot/internal/adapter"
 )
 
 func (s *Server) processMessage(message *Message) {

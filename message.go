@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/yanzay/tbot/adapter"
+	"github.com/yanzay/tbot/internal/adapter"
 )
 
 // MessageVars is a parsed message variables lookup table

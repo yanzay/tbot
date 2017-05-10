@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/yanzay/tbot/adapter"
+	"github.com/yanzay/tbot/internal/adapter"
 )
 
 func TestMain(m *testing.M) {
