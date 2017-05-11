@@ -9,6 +9,10 @@
 go get -u github.com/yanzay/tbot
 ```
 
+## Support
+
+Join [telegram group](https://t.me/tbotgo) to get support.
+
 ## Usage
 
 It feels like net/http Server, so it's easy to use:
