@@ -94,6 +94,17 @@ func chattableFromMessage(m *Message) tgbotapi.Chattable {
 		return tgbotapi.NewAudioUpload(m.ChatID, m.Data)
 	case MessageDocument:
 		return tgbotapi.NewDocumentUpload(m.ChatID, m.Data)
+	case MessageKeyboard:
+		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
+		btns := make([][]tgbotapi.KeyboardButton, len(m.Buttons))
+		for i, buttonRow := range m.Buttons {
+			btns[i] = make([]tgbotapi.KeyboardButton, 0, len(buttonRow))
+			for _, buttonText := range buttonRow {
+				btns[i] = append(btns[i], tgbotapi.NewKeyboardButton(buttonText))
+			}
+		}
+		msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(btns...)
+		return msg
 	}
 	return nil
 }

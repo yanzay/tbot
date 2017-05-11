@@ -92,6 +92,16 @@ func (m *Message) ReplyDocument(filepath string) {
 	m.Replies <- msg
 }
 
+func (m *Message) ReplyKeyboard(text string, buttons [][]string) {
+	msg := &adapter.Message{
+		Type:    adapter.MessageKeyboard,
+		Data:    text,
+		Buttons: buttons,
+		ChatID:  m.ChatID,
+	}
+	m.Replies <- msg
+}
+
 // Download file from FileHandler
 func (m *Message) Download(dir string) error {
 	if m.Type != adapter.MessageDocument {

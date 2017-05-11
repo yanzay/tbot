@@ -8,6 +8,7 @@ const (
 	MessageSticker
 	MessagePhoto
 	MessageAudio
+	MessageKeyboard
 )
 
 type Message struct {
@@ -18,4 +19,5 @@ type Message struct {
 	From           string
 	ChatID         int64
 	DisablePreview bool
+	Buttons        [][]string
 }
