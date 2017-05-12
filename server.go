@@ -9,12 +9,21 @@ type Server struct {
 	bot         adapter.BotAdapter
 	mux         Mux
 	middlewares []Middleware
+	webhookURL  string
 }
 
 type Middleware func(HandlerFunction) HandlerFunction
 
 var createBot = func(token string) (adapter.BotAdapter, error) {
 	return adapter.CreateBot(token)
+}
+
+type ServerOption func(*Server)
+
+func WebhookURL(url string) ServerOption {
+	return func(s *Server) {
+		s.webhookURL = url
+	}
 }
 
 // NewServer creates new Server with Telegram API Token
