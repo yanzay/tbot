@@ -30,6 +30,21 @@ func TestNewServerFail(t *testing.T) {
 	}
 }
 
+func TestNewServerWithWebhook(t *testing.T) {
+	url := "https://some.url"
+	addr := "0.0.0.0:8013"
+	server, err := NewServer(TestToken, WithWebhook(url, addr))
+	if err != nil {
+		t.Errorf("Error creating server with webhook: %s", err)
+	}
+	if server.webhookURL != url {
+		t.Error("Server webhookURL should be set")
+	}
+	if server.listenAddr != addr {
+		t.Error("Server listenAddr should be set")
+	}
+}
+
 func TestAddMiddleware(t *testing.T) {
 	server := &Server{}
 	if len(server.middlewares) > 0 {

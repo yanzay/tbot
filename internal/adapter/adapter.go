@@ -3,13 +3,14 @@ package adapter
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type BotAdapter interface {
 	Send(*Message) error
-	GetUpdatesChan() (<-chan *Message, error)
+	GetUpdatesChan(string, string) (<-chan *Message, error)
 	GetUserName() string
 	GetFirstName() string
 }
@@ -35,14 +36,23 @@ func (b *Bot) Send(m *Message) error {
 	return fmt.Errorf("Trying to send nil chattable. Message: %v", m)
 }
 
-func (b *Bot) GetUpdatesChan() (<-chan *Message, error) {
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-	updates, err := b.tbot.GetUpdatesChan(u)
-	if err != nil {
-		return nil, err
-	}
+func (b *Bot) GetUpdatesChan(webhookURL string, listenAddr string) (<-chan *Message, error) {
 	messages := make(chan *Message)
+	var updates <-chan tgbotapi.Update
+	var err error
+	if webhookURL == "" {
+		u := tgbotapi.NewUpdate(0)
+		u.Timeout = 60
+		updates, err = b.tbot.GetUpdatesChan(u)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		config := tgbotapi.NewWebhook(webhookURL)
+		b.tbot.SetWebhook(config)
+		updates = b.tbot.ListenForWebhook("/")
+		go http.ListenAndServe(listenAddr, nil)
+	}
 	go b.adaptUpdates(updates, messages)
 	return messages, nil
 }

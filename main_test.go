@@ -30,7 +30,7 @@ func (*mockBot) Send(m *adapter.Message) error {
 	return nil
 }
 
-func (*mockBot) GetUpdatesChan() (<-chan *adapter.Message, error) {
+func (*mockBot) GetUpdatesChan(webhookURL string, listenAddr string) (<-chan *adapter.Message, error) {
 	return inputMessages, nil
 }
 

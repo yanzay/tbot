@@ -9,6 +9,8 @@ type Server struct {
 	bot         adapter.BotAdapter
 	mux         Mux
 	middlewares []Middleware
+	webhookURL  string
+	listenAddr  string
 }
 
 type Middleware func(HandlerFunction) HandlerFunction
@@ -17,9 +19,18 @@ var createBot = func(token string) (adapter.BotAdapter, error) {
 	return adapter.CreateBot(token)
 }
 
+type ServerOption func(*Server)
+
+func WithWebhook(url string, addr string) ServerOption {
+	return func(s *Server) {
+		s.webhookURL = url
+		s.listenAddr = addr
+	}
+}
+
 // NewServer creates new Server with Telegram API Token
 // and default /help handler
-func NewServer(token string) (*Server, error) {
+func NewServer(token string, options ...ServerOption) (*Server, error) {
 	tbot, err := createBot(token)
 	if err != nil {
 		return nil, err
@@ -28,6 +39,10 @@ func NewServer(token string) (*Server, error) {
 	server := &Server{
 		bot: tbot,
 		mux: NewDefaultMux(),
+	}
+
+	for _, option := range options {
+		option(server)
 	}
 
 	server.HandleFunc("/help", server.HelpHandler)
@@ -41,7 +56,7 @@ func (s *Server) AddMiddleware(mid Middleware) {
 
 // ListenAndServe starts Server, returns error on failure
 func (s *Server) ListenAndServe() error {
-	updates, err := s.bot.GetUpdatesChan()
+	updates, err := s.bot.GetUpdatesChan(s.webhookURL, s.listenAddr)
 	if err != nil {
 		return err
 	}
