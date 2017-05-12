@@ -41,6 +41,7 @@ func (b *Bot) GetUpdatesChan(webhookURL string, listenAddr string) (<-chan *Mess
 	var updates <-chan tgbotapi.Update
 	var err error
 	if webhookURL == "" {
+		b.tbot.RemoveWebhook()
 		u := tgbotapi.NewUpdate(0)
 		u.Timeout = 60
 		updates, err = b.tbot.GetUpdatesChan(u)
