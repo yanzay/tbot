@@ -28,7 +28,7 @@ func WebhookURL(url string) ServerOption {
 
 // NewServer creates new Server with Telegram API Token
 // and default /help handler
-func NewServer(token string) (*Server, error) {
+func NewServer(token string, options ...ServerOption) (*Server, error) {
 	tbot, err := createBot(token)
 	if err != nil {
 		return nil, err
@@ -37,6 +37,10 @@ func NewServer(token string) (*Server, error) {
 	server := &Server{
 		bot: tbot,
 		mux: NewDefaultMux(),
+	}
+
+	for _, option := range options {
+		option(server)
 	}
 
 	server.HandleFunc("/help", server.HelpHandler)
@@ -50,7 +54,7 @@ func (s *Server) AddMiddleware(mid Middleware) {
 
 // ListenAndServe starts Server, returns error on failure
 func (s *Server) ListenAndServe() error {
-	updates, err := s.bot.GetUpdatesChan()
+	updates, err := s.bot.GetUpdatesChan(s.webhookURL)
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package adapter
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -49,6 +50,8 @@ func (b *Bot) GetUpdatesChan(webhookURL string) (<-chan *Message, error) {
 	} else {
 		config := tgbotapi.NewWebhook(webhookURL)
 		b.tbot.SetWebhook(config)
+		updates = b.tbot.ListenForWebhook("/")
+		go http.ListenAndServe("0.0.0.0:8013", nil)
 	}
 	go b.adaptUpdates(updates, messages)
 	return messages, nil
