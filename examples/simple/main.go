@@ -30,6 +30,7 @@ func main() {
 	// Bot can send stickers, photos, music
 	bot.HandleFunc("/sticker", StickerHandler)
 	bot.HandleFunc("/photo", PhotoHandler)
+	bot.HandleFunc("/keyboard", KeyboardHandler)
 
 	// Use file handler to handle user uploads
 	bot.HandleFile(FileHandler)
@@ -64,6 +65,14 @@ func StickerHandler(message *tbot.Message) {
 
 func PhotoHandler(message *tbot.Message) {
 	message.ReplyPhoto("photo.jpg", "it's me")
+}
+
+func KeyboardHandler(message *tbot.Message) {
+	buttons := [][]string{
+		{"Some", "Test", "Buttons"},
+		{"Another", "Row"},
+	}
+	message.ReplyKeyboard("Buttons example", buttons)
 }
 
 func FileHandler(message *tbot.Message) {

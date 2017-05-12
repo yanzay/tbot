@@ -71,6 +71,15 @@ func TestDocumentUpload(t *testing.T) {
 		adapter.MessageDocument, "OK", adapter.MessageText)
 }
 
+func TestKeyboardReply(t *testing.T) {
+	setup := func(s *Server) {
+		s.HandleFunc("/keyboard", func(m *Message) {
+			m.ReplyKeyboard("keys", [][]string{{"hi"}})
+		})
+	}
+	requestResponse(t, setup, "/keyboard", adapter.MessageText, "keys", adapter.MessageKeyboard)
+}
+
 func requestResponse(t *testing.T, setup func(*Server), inData string, inType adapter.MessageType, outData string, outType adapter.MessageType) {
 	inputMessages = make(chan *adapter.Message)
 	defer close(inputMessages)
