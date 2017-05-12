@@ -19,5 +19,6 @@ type Message struct {
 	From           string
 	ChatID         int64
 	DisablePreview bool
+	Markdown       bool
 	Buttons        [][]string
 }

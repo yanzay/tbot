@@ -94,7 +94,12 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *Mess
 func chattableFromMessage(m *Message) tgbotapi.Chattable {
 	switch m.Type {
 	case MessageText:
-		return tgbotapi.NewMessage(m.ChatID, m.Data)
+		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
+		msg.DisableWebPagePreview = m.DisablePreview
+		if m.Markdown {
+			msg.ParseMode = tgbotapi.ModeMarkdown
+		}
+		return msg
 	case MessageSticker:
 		return tgbotapi.NewStickerUpload(m.ChatID, m.Data)
 	case MessagePhoto:

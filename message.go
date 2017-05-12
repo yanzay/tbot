@@ -26,6 +26,10 @@ var DisablePreview = func(msg *adapter.Message) {
 	msg.DisablePreview = true
 }
 
+var WithMarkdown = func(msg *adapter.Message) {
+	msg.Markdown = true
+}
+
 // Text returns message text
 func (m *Message) Text() string {
 	return m.Data
