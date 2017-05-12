@@ -10,7 +10,7 @@ import (
 
 type BotAdapter interface {
 	Send(*Message) error
-	GetUpdatesChan(string) (<-chan *Message, error)
+	GetUpdatesChan(string, string) (<-chan *Message, error)
 	GetUserName() string
 	GetFirstName() string
 }
@@ -36,7 +36,7 @@ func (b *Bot) Send(m *Message) error {
 	return fmt.Errorf("Trying to send nil chattable. Message: %v", m)
 }
 
-func (b *Bot) GetUpdatesChan(webhookURL string) (<-chan *Message, error) {
+func (b *Bot) GetUpdatesChan(webhookURL string, listenAddr string) (<-chan *Message, error) {
 	messages := make(chan *Message)
 	var updates <-chan tgbotapi.Update
 	var err error
@@ -51,7 +51,7 @@ func (b *Bot) GetUpdatesChan(webhookURL string) (<-chan *Message, error) {
 		config := tgbotapi.NewWebhook(webhookURL)
 		b.tbot.SetWebhook(config)
 		updates = b.tbot.ListenForWebhook("/")
-		go http.ListenAndServe("0.0.0.0:8013", nil)
+		go http.ListenAndServe(listenAddr, nil)
 	}
 	go b.adaptUpdates(updates, messages)
 	return messages, nil
