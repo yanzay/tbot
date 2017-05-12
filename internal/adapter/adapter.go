@@ -96,15 +96,20 @@ func chattableFromMessage(m *Message) tgbotapi.Chattable {
 		return tgbotapi.NewDocumentUpload(m.ChatID, m.Data)
 	case MessageKeyboard:
 		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
-		btns := make([][]tgbotapi.KeyboardButton, len(m.Buttons))
-		for i, buttonRow := range m.Buttons {
-			btns[i] = make([]tgbotapi.KeyboardButton, 0, len(buttonRow))
-			for _, buttonText := range buttonRow {
-				btns[i] = append(btns[i], tgbotapi.NewKeyboardButton(buttonText))
-			}
-		}
+		btns := buttonsFromStrings(m.Buttons)
 		msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(btns...)
 		return msg
 	}
 	return nil
+}
+
+func buttonsFromStrings(strs [][]string) [][]tgbotapi.KeyboardButton {
+	btns := make([][]tgbotapi.KeyboardButton, len(strs))
+	for i, buttonRow := range strs {
+		btns[i] = make([]tgbotapi.KeyboardButton, len(buttonRow))
+		for j, buttonText := range buttonRow {
+			btns[i][j] = tgbotapi.NewKeyboardButton(buttonText)
+		}
+	}
+	return btns
 }
