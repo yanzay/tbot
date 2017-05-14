@@ -12,13 +12,14 @@ const (
 )
 
 type Message struct {
-	Type           MessageType
-	Data           string
-	Caption        string
-	Replies        chan *Message
-	From           string
-	ChatID         int64
-	DisablePreview bool
-	Markdown       bool
-	Buttons        [][]string
+	Type            MessageType
+	Data            string
+	Caption         string
+	Replies         chan *Message
+	From            string
+	ChatID          int64
+	DisablePreview  bool
+	Markdown        bool
+	Buttons         [][]string
+	OneTimeKeyboard bool
 }

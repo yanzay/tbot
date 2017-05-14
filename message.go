@@ -96,12 +96,21 @@ func (m *Message) ReplyDocument(filepath string) {
 	m.Replies <- msg
 }
 
-func (m *Message) ReplyKeyboard(text string, buttons [][]string) {
+type KeyboardOption func(*adapter.Message)
+
+var OneTimeKeyboard = func(msg *adapter.Message) {
+	msg.OneTimeKeyboard = true
+}
+
+func (m *Message) ReplyKeyboard(text string, buttons [][]string, options ...KeyboardOption) {
 	msg := &adapter.Message{
 		Type:    adapter.MessageKeyboard,
 		Data:    text,
 		Buttons: buttons,
 		ChatID:  m.ChatID,
+	}
+	for _, option := range options {
+		option(msg)
 	}
 	m.Replies <- msg
 }

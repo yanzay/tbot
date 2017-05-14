@@ -113,7 +113,9 @@ func chattableFromMessage(m *Message) tgbotapi.Chattable {
 	case MessageKeyboard:
 		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
 		btns := buttonsFromStrings(m.Buttons)
-		msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(btns...)
+		keyboard := tgbotapi.NewReplyKeyboard(btns...)
+		keyboard.OneTimeKeyboard = m.OneTimeKeyboard
+		msg.ReplyMarkup = keyboard
 		return msg
 	}
 	return nil
