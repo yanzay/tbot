@@ -28,6 +28,12 @@ func WithWebhook(url string, addr string) ServerOption {
 	}
 }
 
+func WithMux(m Mux) ServerOption {
+	return func(s *Server) {
+		s.mux = m
+	}
+}
+
 // NewServer creates new Server with Telegram API Token
 // and default /help handler
 func NewServer(token string, options ...ServerOption) (*Server, error) {
