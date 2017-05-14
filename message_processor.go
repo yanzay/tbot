@@ -33,7 +33,7 @@ func (s *Server) chooseHandler(message *Message) (*Handler, MessageVars) {
 		data = map[string]string{"url": message.Data}
 	} else {
 		message.Data = s.trimBotName(message.Data)
-		handler, data = s.mux.Mux(message.Data)
+		handler, data = s.mux.Mux(message)
 	}
 
 	return handler, data

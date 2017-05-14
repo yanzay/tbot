@@ -10,7 +10,7 @@ type Handlers map[string]*Handler
 
 // Mux interface represents message multiplexer
 type Mux interface {
-	Mux(string) (*Handler, MessageVars)
+	Mux(*Message) (*Handler, MessageVars)
 	HandleFunc(string, HandlerFunction, ...string)
 	HandleFile(HandlerFunction, ...string)
 	HandleDefault(HandlerFunction, ...string)

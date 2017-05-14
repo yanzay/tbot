@@ -1,11 +1,15 @@
 package tbot
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/yanzay/tbot/internal/adapter"
+)
 
 func TestDefaultMux(t *testing.T) {
 	mux := NewDefaultMux()
 	mux.HandleFunc("hi", func(m *Message) { m.Reply("hi") }, "hi")
-	handler, _ := mux.Mux("hi")
+	handler, _ := mux.Mux(message("hi"))
 	if handler == nil {
 		t.Fail()
 	}
@@ -22,7 +26,7 @@ func TestReplaceVariables(t *testing.T) {
 func TestDefaultMuxWithVariable(t *testing.T) {
 	mux := NewDefaultMux()
 	mux.HandleFunc("/say {text}", func(m *Message) { m.Reply("hi") })
-	handler, data := mux.Mux("/say hi")
+	handler, data := mux.Mux(message("/say hi"))
 	if handler == nil {
 		t.Fail()
 	}
@@ -34,7 +38,7 @@ func TestDefaultMuxWithVariable(t *testing.T) {
 func TestDefaultMuxWithVariables(t *testing.T) {
 	mux := NewDefaultMux()
 	mux.HandleFunc("/say {some} {text}", func(m *Message) { m.Reply("hi") })
-	_, data := mux.Mux("/say something new")
+	_, data := mux.Mux(message("/say something new"))
 	if data["some"] != "something" {
 		t.Fail()
 	}
@@ -58,7 +62,7 @@ func TestMuxDefaultHandler(t *testing.T) {
 	mux := NewDefaultMux()
 	f := func(m *Message) { m.Reply("default") }
 	mux.HandleDefault(f)
-	handler, err := mux.Mux("some text here")
+	handler, err := mux.Mux(message("some text here"))
 	if err != nil {
 		t.Fail()
 	}
@@ -87,4 +91,8 @@ func TestHandlers(t *testing.T) {
 	if handlers["/hi"] == nil {
 		t.Fail()
 	}
+}
+
+func message(text string) *Message {
+	return &Message{Message: &adapter.Message{Data: text}}
 }

@@ -33,7 +33,8 @@ func (dm *DefaultMux) FileHandler() *Handler {
 
 // Mux takes message content and returns corresponding handler
 // and parsed vars from message
-func (dm *DefaultMux) Mux(path string) (*Handler, MessageVars) {
+func (dm *DefaultMux) Mux(msg *Message) (*Handler, MessageVars) {
+	path := msg.Data
 	for _, handler := range dm.handlers {
 		re := regexp.MustCompile(handler.pattern)
 		matches := re.FindStringSubmatch(path)
