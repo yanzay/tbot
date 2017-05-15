@@ -3,6 +3,12 @@
 
 **tbot** is a Telegram bot server.
 
+> It feels just like net/http. You define routes and handlers and it works. Middleware support included.
+
+## Hipster logo
+
+![logo](logo.png)
+
 ## Installation
 
 ```bash
@@ -106,6 +112,4 @@ func FileHandler(message *tbot.Message) {
 }
 ```
 
-See full documentation here: https://godoc.org/github.com/yanzay/tbot
-
-Test coverage: https://gocover.io/github.com/yanzay/tbot
+See full documentation on [godoc](https://godoc.org/github.com/yanzay/tbot).
