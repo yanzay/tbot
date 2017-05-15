@@ -27,6 +27,7 @@ func (dm *DefaultMux) DefaultHandler() *Handler {
 	return dm.defaultHandler
 }
 
+// FileHandler returns file handler, nil if there is no file handler
 func (dm *DefaultMux) FileHandler() *Handler {
 	return dm.fileHandler
 }
@@ -62,6 +63,7 @@ func (dm *DefaultMux) HandleDefault(handler HandlerFunction, description ...stri
 	dm.defaultHandler = NewHandler(handler, "", description...)
 }
 
+// HandleFile adds file handler. When the user uploads Document, Download method will be available for *Message.
 func (dm *DefaultMux) HandleFile(handler HandlerFunction, description ...string) {
 	dm.fileHandler = NewHandler(handler, "", description...)
 }

@@ -13,14 +13,19 @@ type Server struct {
 	listenAddr  string
 }
 
+// Middleware function takes HandlerFunction and returns HandlerFunction.
+// Should call it's argument function inside, if needed.
 type Middleware func(HandlerFunction) HandlerFunction
 
 var createBot = func(token string) (adapter.BotAdapter, error) {
 	return adapter.CreateBot(token)
 }
 
+// ServerOption is a functional option for Server
 type ServerOption func(*Server)
 
+// WithWebhook returns ServerOption for given Webhook URL and Server address to listen.
+// e.g. WithWebook("https://bot.example.com/super/url", "0.0.0.0:8080")
 func WithWebhook(url string, addr string) ServerOption {
 	return func(s *Server) {
 		s.webhookURL = url
@@ -28,6 +33,7 @@ func WithWebhook(url string, addr string) ServerOption {
 	}
 }
 
+// WithMux sets custom mux for server. Should satisfy Mux interface.
 func WithMux(m Mux) ServerOption {
 	return func(s *Server) {
 		s.mux = m
@@ -56,6 +62,7 @@ func NewServer(token string, options ...ServerOption) (*Server, error) {
 	return server, nil
 }
 
+// AddMiddleware adds new Middleware for server
 func (s *Server) AddMiddleware(mid Middleware) {
 	s.middlewares = append(s.middlewares, mid)
 }
@@ -86,6 +93,7 @@ func (s *Server) Handle(path string, reply string, description ...string) {
 	s.HandleFunc(path, f, description...)
 }
 
+// HandleFile adds file handler for user uploads.
 func (s *Server) HandleFile(handler HandlerFunction, description ...string) {
 	s.mux.HandleFile(handler, description...)
 }

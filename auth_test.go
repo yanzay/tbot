@@ -4,7 +4,7 @@ import "testing"
 
 func TestAccessDenied(t *testing.T) {
 	message := mockMessage()
-	go AccessDenied(message)
+	go accessDenied(message)
 	reply := <-message.Replies
 	if reply == nil {
 		t.Fail()

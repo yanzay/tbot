@@ -20,12 +20,15 @@ type Message struct {
 	Vars MessageVars
 }
 
-type Option func(*adapter.Message)
+// MessageOption is a functional option for text messages
+type MessageOption func(*adapter.Message)
 
+// DisablePreview option disables web page preview when sending links.
 var DisablePreview = func(msg *adapter.Message) {
 	msg.DisablePreview = true
 }
 
+// WithMarkdown option enables Markdown style formatting for text messages.
 var WithMarkdown = func(msg *adapter.Message) {
 	msg.Markdown = true
 }
@@ -36,7 +39,7 @@ func (m *Message) Text() string {
 }
 
 // Reply to the user with plain text
-func (m *Message) Reply(reply string, options ...Option) {
+func (m *Message) Reply(reply string, options ...MessageOption) {
 	msg := &adapter.Message{
 		ChatID: m.ChatID,
 		Type:   adapter.MessageText,
@@ -96,12 +99,15 @@ func (m *Message) ReplyDocument(filepath string) {
 	m.Replies <- msg
 }
 
+// KeyboardOption is a functional option for custom keyboards
 type KeyboardOption func(*adapter.Message)
 
+// OneTimeKeyboard option sends keyboard that hides after the user use it once.
 var OneTimeKeyboard = func(msg *adapter.Message) {
 	msg.OneTimeKeyboard = true
 }
 
+// ReplyKeyboard sends custom reply keyboard to the user.
 func (m *Message) ReplyKeyboard(text string, buttons [][]string, options ...KeyboardOption) {
 	msg := &adapter.Message{
 		Type:    adapter.MessageKeyboard,
@@ -122,7 +128,10 @@ func (m *Message) Download(dir string) error {
 	}
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		os.Mkdir(dir, 0755)
+		err := os.Mkdir(dir, 0755)
+		if err != nil {
+			return fmt.Errorf("Can't create directory for user uploads: %q", err)
+		}
 	}
 
 	tokens := strings.Split(m.Vars["url"], "/")
