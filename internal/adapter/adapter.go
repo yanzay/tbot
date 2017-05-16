@@ -68,24 +68,32 @@ func (b *Bot) GetFirstName() string {
 
 func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *Message) {
 	var err error
+	var msg *tgbotapi.Message
 	for update := range updates {
+		if update.Message != nil {
+			msg = update.Message
+		} else {
+			msg = update.ChannelPost
+		}
+
 		message := &Message{
 			Replies: make(chan *Message),
-			From:    update.Message.From.UserName,
-			ChatID:  update.Message.Chat.ID,
+			From:    msg.From.UserName,
+			ChatID:  msg.Chat.ID,
 		}
+
 		switch {
-		case update.Message.Document != nil:
-			message.Data, err = b.tbot.GetFileDirectURL(update.Message.Document.FileID)
+		case msg.Document != nil:
+			message.Data, err = b.tbot.GetFileDirectURL(msg.Document.FileID)
 			if err != nil {
 				log.Println(err)
 				continue
 			}
 			message.Type = MessageDocument
 			messages <- message
-		case update.Message.Text != "":
+		case msg.Text != "":
 			message.Type = MessageText
-			message.Data = update.Message.Text
+			message.Data = msg.Text
 			messages <- message
 		}
 	}
