@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/yanzay/tbot"
 )
@@ -15,7 +16,7 @@ func main() {
 		log.Fatal(err)
 	}
 	bot.HandleFunc("/cowsay {text}", CowHandler)
-	err := bot.ListenAndServe()
+	err = bot.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -27,7 +28,7 @@ func CowHandler(m *tbot.Message) {
 }
 
 func cowsay(text string) string {
-	lineLen := len(text) + 2
+	lineLen := utf8.RuneCountInString(text) + 2
 	topLine := fmt.Sprintf(" %s ", strings.Repeat("_", lineLen))
 	textLine := fmt.Sprintf("< %s >", text)
 	bottomLine := fmt.Sprintf(" %s ", strings.Repeat("-", lineLen))
