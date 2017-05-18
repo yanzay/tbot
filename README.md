@@ -17,7 +17,9 @@ go get -u github.com/yanzay/tbot
 
 ## Support
 
-Join [telegram group](https://t.me/tbotgo) to get support.
+For brief introduction, take a look the blog post [on medium](https://medium.com/@yanzay/develop-your-own-telegram-bot-with-golang-and-tbot-de726883b83c).
+
+Join [telegram group](https://t.me/tbotgo) to get support or just to say thank you.
 
 ## Usage
 
