@@ -102,3 +102,7 @@ func (s *Server) HandleFile(handler HandlerFunction, description ...string) {
 func (s *Server) HandleDefault(handler HandlerFunction, description ...string) {
 	s.mux.HandleDefault(handler, description...)
 }
+
+func (s *Server) SetAlias(route string, aliases ...string) {
+	s.mux.SetAlias(route, aliases...)
+}
