@@ -14,6 +14,7 @@ type Mux interface {
 	HandleFunc(string, HandlerFunction, ...string)
 	HandleFile(HandlerFunction, ...string)
 	HandleDefault(HandlerFunction, ...string)
+	SetAlias(string, ...string)
 
 	Handlers() Handlers
 	DefaultHandler() *Handler

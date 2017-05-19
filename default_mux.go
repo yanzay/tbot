@@ -10,11 +10,15 @@ type DefaultMux struct {
 	handlers       Handlers
 	fileHandler    *Handler
 	defaultHandler *Handler
+	aliases        map[string]string
 }
 
 // NewDefaultMux creates new DefaultMux
 func NewDefaultMux() Mux {
-	return &DefaultMux{handlers: make(Handlers)}
+	return &DefaultMux{
+		handlers: make(Handlers),
+		aliases:  make(map[string]string),
+	}
 }
 
 // Handlers returns list of handlers currently presented in mux
@@ -50,6 +54,12 @@ func (dm *DefaultMux) Mux(msg *Message) (*Handler, MessageVars) {
 		}
 	}
 	return dm.defaultHandler, nil
+}
+
+func (dm *DefaultMux) SetAlias(route string, aliases ...string) {
+	for _, alias := range aliases {
+		dm.aliases[alias] = route
+	}
 }
 
 // HandleFunc adds new handler function to mux, "description" is for "/help" handler.

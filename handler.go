@@ -6,7 +6,7 @@ import (
 )
 
 // Handler is a struct that represents any message handler
-// with handler function, descriptio, pattern and parsed variables
+// with handler function, description, pattern and parsed variables
 type Handler struct {
 	f           HandlerFunction
 	description string

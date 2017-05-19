@@ -4,7 +4,7 @@ import "strings"
 
 const (
 	RouteBack    = "/<..>"
-	RouteRoot    = "/</>"
+	RouteRoot    = "/<root>"
 	RouteRefresh = "/<.>"
 )
 
@@ -17,6 +17,7 @@ type RouterMux struct {
 	fileHandler    *Handler
 	defaultHandler *Handler
 	storage        SessionStorage
+	aliases        map[string]string
 }
 
 // NewDefaultMux creates new DefaultMux
@@ -24,6 +25,7 @@ func NewRouterMux(storage SessionStorage) Mux {
 	return &RouterMux{
 		handlers: make(Handlers),
 		storage:  storage,
+		aliases:  make(map[string]string),
 	}
 }
 
@@ -45,14 +47,21 @@ func (rm *RouterMux) FileHandler() *Handler {
 // and parsed vars from message
 func (rm *RouterMux) Mux(msg *Message) (*Handler, MessageVars) {
 	state := rm.storage.Get(msg.ChatID)
-	switch msg.Data {
+	if state == "" {
+		state = RouteRoot
+	}
+	route := msg.Data
+	if _, ok := rm.aliases[msg.Data]; ok {
+		route = rm.aliases[msg.Data]
+	}
+	switch route {
 	case RouteBack:
 		state = back(state)
 	case RouteRoot:
 		state = root(state)
 	case RouteRefresh:
 	default:
-		state += msg.Data
+		state += route
 	}
 	rm.storage.Set(msg.ChatID, state)
 	return rm.handlers[state], MessageVars{}
@@ -70,7 +79,16 @@ func root(route string) string {
 
 // HandleFunc adds new handler function to mux, "description" is for "/help" handler.
 func (rm *RouterMux) HandleFunc(path string, handler HandlerFunction, description ...string) {
+	if path != RouteRoot {
+		path = RouteRoot + path
+	}
 	rm.handlers[path] = NewHandler(handler, path, description...)
+}
+
+func (rm *RouterMux) SetAlias(route string, aliases ...string) {
+	for _, alias := range aliases {
+		rm.aliases[alias] = route
+	}
 }
 
 // HandleDefault adds new default handler, when nothing matches with message,

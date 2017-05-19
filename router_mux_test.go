@@ -15,51 +15,87 @@ type testSequence struct {
 func TestRouterMux(t *testing.T) {
 	seqs := []testSequence{
 		{
-			[]string{"/index", "/pets", "/cat"},
+			[]string{RouteRoot, "/pets", "/cat"},
 			"index pets cat",
 		},
 		{
-			[]string{"/index", "/pets", RouteBack},
-			"index pets index",
+			[]string{"/pets", RouteBack},
+			"pets index",
 		},
 		{
-			[]string{"/index", "/pets", "/cat", RouteBack, RouteBack},
-			"index pets cat pets index",
+			[]string{"/pets", "/cat", RouteBack, RouteBack},
+			"pets cat pets index",
 		},
 		{
-			[]string{"/index", "/pets", "/cat", RouteRoot, "/pets"},
-			"index pets cat index pets",
+			[]string{"/pets", "/cat", RouteRoot, "/pets"},
+			"pets cat index pets",
 		},
 		{
-			[]string{"/index", "/pets", RouteRefresh},
-			"index pets pets",
+			[]string{"/pets", RouteRefresh},
+			"pets pets",
 		},
 	}
 	for _, seq := range seqs {
-		routerMuxFlow(t, seq.flow, seq.expected)
+		rm := NewRouterMux(NewSessionStorage())
+		rm.HandleFunc(RouteRoot, indexHandler)
+		rm.HandleFunc("/pets", petsHandler)
+		rm.HandleFunc("/pets/cat", catHandler)
+		routerMuxFlow(t, rm, seq)
 	}
 }
 
-func routerMuxFlow(t *testing.T, flow []string, expected string) {
-	sessions := NewSessionStorage()
-	rm := NewRouterMux(sessions)
+func TestRouterAliases(t *testing.T) {
+	seqs := []testSequence{
+		{
+			[]string{"Home", "Pets", "Cat"},
+			"index pets cat",
+		},
+		{
+			[]string{"Home", "Pets", RouteBack, "Pictures", "Cat"},
+			"index pets index pictures piccat",
+		},
+		{
+			[]string{"Home", "/pets", "Kitty", RouteRefresh},
+			"index pets cat cat",
+		},
+	}
+	for _, seq := range seqs {
+		rm := NewRouterMux(NewSessionStorage())
+		rm.HandleFunc(RouteRoot, indexHandler)
+		rm.HandleFunc("/pets", petsHandler)
+		rm.HandleFunc("/pets/cat", catHandler)
+		rm.HandleFunc("/pictures", pictureshandler)
+		rm.HandleFunc("/pictures/cat", picCatHandler)
+		rm.SetAlias(RouteRoot, "Home")
+		rm.SetAlias("/pets", "Pets")
+		rm.SetAlias("/cat", "Cat", "Kitty")
+		rm.SetAlias("/pictures", "Pictures")
+		routerMuxFlow(t, rm, seq)
+	}
+}
+
+func routerMuxFlow(t *testing.T, mux Mux, seq testSequence) {
 	path := make([]string, 0)
-	indexHandler := func(*Message) { path = append(path, "index") }
-	petsHandler := func(*Message) { path = append(path, "pets") }
-	catHandler := func(*Message) { path = append(path, "cat") }
-	rm.HandleFunc("/index", indexHandler)
-	rm.HandleFunc("/index/pets", petsHandler)
-	rm.HandleFunc("/index/pets/cat", catHandler)
-	for _, input := range flow {
-		msg := &Message{Message: &adapter.Message{Data: input}}
-		h, _ := rm.Mux(msg)
+	for _, input := range seq.flow {
+		msg := &Message{
+			Message: &adapter.Message{Data: input},
+			Vars:    make(map[string]string),
+		}
+		h, _ := mux.Mux(msg)
 		if h == nil {
 			t.Errorf("Handler is nil for message: %s", input)
 		}
 		h.f(msg)
+		path = append(path, msg.Vars["path"])
 	}
 	fullPath := strings.Join(path, " ")
-	if fullPath != expected {
-		t.Errorf("Expected path: '%s', actual path: '%s'", expected, fullPath)
+	if fullPath != seq.expected {
+		t.Errorf("Expected path: '%s', actual path: '%s'", seq.expected, fullPath)
 	}
 }
+
+func indexHandler(m *Message)    { m.Vars["path"] = "index" }
+func petsHandler(m *Message)     { m.Vars["path"] = "pets" }
+func catHandler(m *Message)      { m.Vars["path"] = "cat" }
+func pictureshandler(m *Message) { m.Vars["path"] = "pictures" }
+func picCatHandler(m *Message)   { m.Vars["path"] = "piccat" }
