@@ -61,6 +61,9 @@ func (rm *RouterMux) Mux(msg *Message) (*Handler, MessageVars) {
 		state += route
 	}
 	rm.storage.Set(msg.ChatID, state)
+	if rm.handlers[state] == nil {
+		return rm.defaultHandler, nil
+	}
 	return rm.handlers[state], MessageVars{}
 }
 
@@ -86,6 +89,7 @@ func (rm *RouterMux) SetAlias(route string, aliases ...string) {
 
 // HandleDefault adds new default handler, when nothing matches with message,
 func (rm *RouterMux) HandleDefault(handler HandlerFunction, description ...string) {
+	rm.defaultHandler = NewHandler(handler, "", description...)
 }
 
 func (rm *RouterMux) HandleFile(handler HandlerFunction, description ...string) {
