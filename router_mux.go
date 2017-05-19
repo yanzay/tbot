@@ -3,8 +3,9 @@ package tbot
 import "strings"
 
 const (
-	RouteBack = "/<..>"
-	RouteRoot = "/</>"
+	RouteBack    = "/<..>"
+	RouteRoot    = "/</>"
+	RouteRefresh = "/<.>"
 )
 
 // DefaultMux is a default multiplexer,
@@ -49,6 +50,7 @@ func (rm *RouterMux) Mux(msg *Message) (*Handler, MessageVars) {
 		state = back(state)
 	case RouteRoot:
 		state = root(state)
+	case RouteRefresh:
 	default:
 		state += msg.Data
 	}

@@ -7,21 +7,36 @@ import (
 	"github.com/yanzay/tbot/internal/adapter"
 )
 
+type testSequence struct {
+	flow     []string
+	expected string
+}
+
 func TestRouterMux(t *testing.T) {
-	flows := [][]string{
-		{"/index", "/pets", "/cat"},
-		{"/index", "/pets", RouteBack},
-		{"/index", "/pets", "/cat", RouteBack, RouteBack},
-		{"/index", "/pets", "/cat", RouteRoot, "/pets"},
+	seqs := []testSequence{
+		{
+			[]string{"/index", "/pets", "/cat"},
+			"index pets cat",
+		},
+		{
+			[]string{"/index", "/pets", RouteBack},
+			"index pets index",
+		},
+		{
+			[]string{"/index", "/pets", "/cat", RouteBack, RouteBack},
+			"index pets cat pets index",
+		},
+		{
+			[]string{"/index", "/pets", "/cat", RouteRoot, "/pets"},
+			"index pets cat index pets",
+		},
+		{
+			[]string{"/index", "/pets", RouteRefresh},
+			"index pets pets",
+		},
 	}
-	expected := []string{
-		"index pets cat",
-		"index pets index",
-		"index pets cat pets index",
-		"index pets cat index pets",
-	}
-	for i := range flows {
-		routerMuxFlow(t, flows[i], expected[i])
+	for _, seq := range seqs {
+		routerMuxFlow(t, seq.flow, seq.expected)
 	}
 }
 
