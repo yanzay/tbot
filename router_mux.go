@@ -8,10 +8,7 @@ const (
 	RouteRefresh = "/<.>"
 )
 
-// DefaultMux is a default multiplexer,
-// supports parametrized commands.
-// Parameters should be enclosed with curly brackets,
-// like in "/say {hi}" - "hi" is a parameter.
+// RouterMux is a tree-route multiplexer
 type RouterMux struct {
 	handlers       Handlers
 	fileHandler    *Handler
@@ -20,7 +17,8 @@ type RouterMux struct {
 	aliases        map[string]string
 }
 
-// NewDefaultMux creates new DefaultMux
+// NewRouterMux creates new RouterMux
+// Takes SessionStorage to store users' sessions state
 func NewRouterMux(storage SessionStorage) Mux {
 	return &RouterMux{
 		handlers: make(Handlers),
@@ -31,7 +29,7 @@ func NewRouterMux(storage SessionStorage) Mux {
 
 // Handlers returns list of handlers currently presented in mux
 func (rm *RouterMux) Handlers() Handlers {
-	return Handlers{}
+	return rm.handlers
 }
 
 // DefaultHandler returns default handler, nil if it's not set
@@ -44,21 +42,20 @@ func (rm *RouterMux) FileHandler() *Handler {
 }
 
 // Mux takes message content and returns corresponding handler
-// and parsed vars from message
 func (rm *RouterMux) Mux(msg *Message) (*Handler, MessageVars) {
 	state := rm.storage.Get(msg.ChatID)
 	if state == "" {
 		state = RouteRoot
 	}
 	route := msg.Data
-	if _, ok := rm.aliases[msg.Data]; ok {
-		route = rm.aliases[msg.Data]
+	if _, ok := rm.aliases[route]; ok {
+		route = rm.aliases[route]
 	}
 	switch route {
 	case RouteBack:
 		state = back(state)
 	case RouteRoot:
-		state = root(state)
+		state = RouteRoot
 	case RouteRefresh:
 	default:
 		state += route
@@ -72,12 +69,7 @@ func back(route string) string {
 	return strings.Join(routes[:len(routes)-1], "/")
 }
 
-func root(route string) string {
-	routes := strings.SplitN(route, "/", 3)
-	return strings.Join(routes[:2], "/")
-}
-
-// HandleFunc adds new handler function to mux, "description" is for "/help" handler.
+// HandleFunc adds new handler function to mux.
 func (rm *RouterMux) HandleFunc(path string, handler HandlerFunction, description ...string) {
 	if path != RouteRoot {
 		path = RouteRoot + path
@@ -85,6 +77,7 @@ func (rm *RouterMux) HandleFunc(path string, handler HandlerFunction, descriptio
 	rm.handlers[path] = NewHandler(handler, path, description...)
 }
 
+// SetAlias sets aliases for specified route.
 func (rm *RouterMux) SetAlias(route string, aliases ...string) {
 	for _, alias := range aliases {
 		rm.aliases[alias] = route
@@ -92,7 +85,6 @@ func (rm *RouterMux) SetAlias(route string, aliases ...string) {
 }
 
 // HandleDefault adds new default handler, when nothing matches with message,
-// "description" is for "/help" handler.
 func (rm *RouterMux) HandleDefault(handler HandlerFunction, description ...string) {
 }
 
