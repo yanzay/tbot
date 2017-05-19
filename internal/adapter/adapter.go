@@ -130,6 +130,9 @@ func chattableFromMessage(m *Message) tgbotapi.Chattable {
 		keyboard := tgbotapi.NewReplyKeyboard(btns...)
 		keyboard.OneTimeKeyboard = m.OneTimeKeyboard
 		msg.ReplyMarkup = keyboard
+		if m.Markdown {
+			msg.ParseMode = tgbotapi.ModeMarkdown
+		}
 		return msg
 	}
 	return nil
