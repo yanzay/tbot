@@ -58,12 +58,16 @@ func (rm *RouterMux) Mux(msg *Message) (*Handler, MessageVars) {
 		state = RouteRoot
 	case RouteRefresh:
 	default:
-		state += route
+		if rm.handlers[state+route] != nil {
+			state += route
+		} else if rm.handlers[back(state)+route] != nil {
+			state = back(state) + route
+		}
 	}
-	rm.storage.Set(msg.ChatID, state)
 	if rm.handlers[state] == nil {
 		return rm.defaultHandler, nil
 	}
+	rm.storage.Set(msg.ChatID, state)
 	return rm.handlers[state], MessageVars{}
 }
 

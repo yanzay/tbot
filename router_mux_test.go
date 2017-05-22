@@ -34,12 +34,19 @@ func TestRouterMux(t *testing.T) {
 			[]string{"/pets", RouteRefresh},
 			"pets pets",
 		},
+		{
+			[]string{"/meals", "/pizza", "/popcorn", RouteBack},
+			"meals pizza popcorn meals",
+		},
 	}
 	for _, seq := range seqs {
 		rm := NewRouterMux(NewSessionStorage())
 		rm.HandleFunc(RouteRoot, indexHandler)
 		rm.HandleFunc("/pets", petsHandler)
 		rm.HandleFunc("/pets/cat", catHandler)
+		rm.HandleFunc("/meals", mealsHandler)
+		rm.HandleFunc("/meals/pizza", pizzaHandler)
+		rm.HandleFunc("/meals/popcorn", popcornHandler)
 		routerMuxFlow(t, rm, seq)
 	}
 }
@@ -99,3 +106,6 @@ func petsHandler(m *Message)     { m.Vars["path"] = "pets" }
 func catHandler(m *Message)      { m.Vars["path"] = "cat" }
 func pictureshandler(m *Message) { m.Vars["path"] = "pictures" }
 func picCatHandler(m *Message)   { m.Vars["path"] = "piccat" }
+func mealsHandler(m *Message)    { m.Vars["path"] = "meals" }
+func pizzaHandler(m *Message)    { m.Vars["path"] = "pizza" }
+func popcornHandler(m *Message)  { m.Vars["path"] = "popcorn" }
