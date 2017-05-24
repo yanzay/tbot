@@ -98,3 +98,7 @@ func (rm *RouterMux) HandleDefault(handler HandlerFunction, description ...strin
 
 func (rm *RouterMux) HandleFile(handler HandlerFunction, description ...string) {
 }
+
+func (rm *RouterMux) Reset(chatID int64) {
+	rm.storage.Reset(chatID)
+}

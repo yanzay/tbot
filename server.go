@@ -106,3 +106,11 @@ func (s *Server) HandleDefault(handler HandlerFunction, description ...string) {
 func (s *Server) SetAlias(route string, aliases ...string) {
 	s.mux.SetAlias(route, aliases...)
 }
+
+func (s *Server) Send(chatID int64, text string) {
+	s.bot.Send(&adapter.Message{Type: adapter.MessageText, ChatID: chatID, Data: text})
+}
+
+func (s *Server) Reset(chatID int64) {
+	s.mux.Reset(chatID)
+}

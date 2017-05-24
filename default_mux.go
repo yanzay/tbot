@@ -77,3 +77,6 @@ func (dm *DefaultMux) HandleDefault(handler HandlerFunction, description ...stri
 func (dm *DefaultMux) HandleFile(handler HandlerFunction, description ...string) {
 	dm.fileHandler = NewHandler(handler, "", description...)
 }
+
+func (db *DefaultMux) Reset(int64) {
+}
