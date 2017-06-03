@@ -15,28 +15,28 @@ type testSequence struct {
 func TestRouterMux(t *testing.T) {
 	seqs := []testSequence{
 		{
-			[]string{RouteRoot, "/pets", "/cat"},
+			[]string{RouteRoot, "pets", "cat"},
 			"index pets cat",
 		},
 		{
-			[]string{"/pets", RouteBack},
+			[]string{"pets", RouteBack},
 			"pets index",
 		},
 		{
-			[]string{"/pets", "/cat", RouteBack, RouteBack},
-			"pets cat pets index",
+			[]string{"pets", "cat", RouteBack},
+			"pets cat index",
 		},
 		{
-			[]string{"/pets", "/cat", RouteRoot, "/pets"},
+			[]string{"pets", "cat", RouteRoot, "pets"},
 			"pets cat index pets",
 		},
 		{
-			[]string{"/pets", RouteRefresh},
+			[]string{"pets", RouteRefresh},
 			"pets pets",
 		},
 		{
-			[]string{"/meals", "/pizza", "/popcorn", RouteBack},
-			"meals pizza popcorn meals",
+			[]string{"meals", "pizza", "popcorn", RouteBack},
+			"meals pizza popcorn index",
 		},
 	}
 	for _, seq := range seqs {
@@ -62,8 +62,8 @@ func TestRouterAliases(t *testing.T) {
 			"index pets index pictures piccat",
 		},
 		{
-			[]string{"Home", "/pets", "Kitty", RouteRefresh},
-			"index pets cat cat",
+			[]string{"Home", "pets", "Kitty", RouteRefresh},
+			"index pets cat pets",
 		},
 	}
 	for _, seq := range seqs {
@@ -74,9 +74,9 @@ func TestRouterAliases(t *testing.T) {
 		rm.HandleFunc("/pictures", pictureshandler)
 		rm.HandleFunc("/pictures/cat", picCatHandler)
 		rm.SetAlias(RouteRoot, "Home")
-		rm.SetAlias("/pets", "Pets")
-		rm.SetAlias("/cat", "Cat", "Kitty")
-		rm.SetAlias("/pictures", "Pictures")
+		rm.SetAlias("pets", "Pets")
+		rm.SetAlias("cat", "Cat", "Kitty")
+		rm.SetAlias("pictures", "Pictures")
 		routerMuxFlow(t, rm, seq)
 	}
 }

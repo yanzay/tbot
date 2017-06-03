@@ -3,33 +3,49 @@ package tbot
 import "strings"
 
 const (
-	RouteBack    = "/<..>"
-	RouteRoot    = "/<root>"
-	RouteRefresh = "/<.>"
+	RouteBack    = "<..>"
+	RouteRoot    = ""
+	RouteRefresh = "<.>"
 )
+
+type Node struct {
+	route    string
+	handler  *Handler
+	parent   *Node
+	children map[string]*Node
+}
+
+func NewNode(parent *Node, route string, handler *Handler) *Node {
+	return &Node{
+		route:    route,
+		handler:  handler,
+		children: make(map[string]*Node),
+		parent:   parent,
+	}
+}
 
 // RouterMux is a tree-route multiplexer
 type RouterMux struct {
-	handlers       Handlers
 	fileHandler    *Handler
 	defaultHandler *Handler
 	storage        SessionStorage
 	aliases        map[string]string
+	root           *Node
 }
 
 // NewRouterMux creates new RouterMux
 // Takes SessionStorage to store users' sessions state
 func NewRouterMux(storage SessionStorage) Mux {
 	return &RouterMux{
-		handlers: make(Handlers),
-		storage:  storage,
-		aliases:  make(map[string]string),
+		storage: storage,
+		aliases: make(map[string]string),
+		root:    NewNode(nil, RouteRoot, nil),
 	}
 }
 
 // Handlers returns list of handlers currently presented in mux
 func (rm *RouterMux) Handlers() Handlers {
-	return rm.handlers
+	return Handlers{}
 }
 
 // DefaultHandler returns default handler, nil if it's not set
@@ -43,32 +59,67 @@ func (rm *RouterMux) FileHandler() *Handler {
 
 // Mux takes message content and returns corresponding handler
 func (rm *RouterMux) Mux(msg *Message) (*Handler, MessageVars) {
-	state := rm.storage.Get(msg.ChatID)
-	if state == "" {
-		state = RouteRoot
-	}
+	var node *Node
 	route := msg.Data
 	if _, ok := rm.aliases[route]; ok {
 		route = rm.aliases[route]
 	}
-	switch route {
-	case RouteBack:
-		state = back(state)
-	case RouteRoot:
-		state = RouteRoot
-	case RouteRefresh:
-	default:
-		if rm.handlers[state+route] != nil {
-			state += route
-		} else if rm.handlers[back(state)+route] != nil {
-			state = back(state) + route
+	if route == RouteRoot {
+		node = rm.root
+	} else {
+		state := rm.storage.Get(msg.ChatID)
+		if state == "" {
+			state = RouteRoot
+		}
+		node = rm.findNode(state)
+		if node == nil {
+			return nil, nil
+		}
+		switch route {
+		case RouteBack:
+			node = node.parent
+		case RouteRefresh:
+		default:
+			if child, ok := node.children[route]; ok {
+				node = child
+			} else {
+				return nil, nil
+			}
 		}
 	}
-	if rm.handlers[state] == nil {
-		return rm.defaultHandler, nil
+	rm.storage.Set(msg.ChatID, nodeToState(node))
+	return node.handler, MessageVars{}
+}
+
+func (rm *RouterMux) findNode(path string) *Node {
+	node := rm.root
+	if path == RouteRoot {
+		return node
 	}
-	rm.storage.Set(msg.ChatID, state)
-	return rm.handlers[state], MessageVars{}
+	parts := strings.Split(path, "/")
+	if len(parts) < 2 {
+		return nil
+	}
+	parts = parts[1:]
+	for _, part := range parts {
+		node = node.children[part]
+		if node == nil {
+			return nil
+		}
+	}
+	return node
+}
+
+func nodeToState(node *Node) string {
+	routes := make([]string, 0)
+	if len(node.children) > 0 {
+		routes = []string{node.route}
+	}
+	for node.parent != nil {
+		node = node.parent
+		routes = append([]string{node.route}, routes...)
+	}
+	return strings.Join(routes, "/")
 }
 
 func back(route string) string {
@@ -78,10 +129,21 @@ func back(route string) string {
 
 // HandleFunc adds new handler function to mux.
 func (rm *RouterMux) HandleFunc(path string, handler HandlerFunction, description ...string) {
-	if path != RouteRoot {
-		path = RouteRoot + path
+	if path == RouteRoot {
+		rm.root.handler = NewHandler(handler, path, description...)
+		return
 	}
-	rm.handlers[path] = NewHandler(handler, path, description...)
+	parts := strings.Split(path, "/")
+	node := rm.root
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+		if node.children[part] == nil {
+			node.children[part] = NewNode(node, part, NewHandler(handler, path, description...))
+		}
+		node = node.children[part]
+	}
 }
 
 // SetAlias sets aliases for specified route.
