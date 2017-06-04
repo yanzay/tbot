@@ -83,7 +83,7 @@ func (rm *RouterMux) Mux(msg *Message) (*Handler, MessageVars) {
 			if child, ok := node.children[route]; ok {
 				node = child
 			} else {
-				return nil, nil
+				return rm.defaultHandler, nil
 			}
 		}
 	}
@@ -120,11 +120,6 @@ func nodeToState(node *Node) string {
 		routes = append([]string{node.route}, routes...)
 	}
 	return strings.Join(routes, "/")
-}
-
-func back(route string) string {
-	routes := strings.Split(route, "/")
-	return strings.Join(routes[:len(routes)-1], "/")
 }
 
 // HandleFunc adds new handler function to mux.
