@@ -10,11 +10,15 @@ type DefaultMux struct {
 	handlers       Handlers
 	fileHandler    *Handler
 	defaultHandler *Handler
+	aliases        map[string]string
 }
 
 // NewDefaultMux creates new DefaultMux
 func NewDefaultMux() Mux {
-	return &DefaultMux{handlers: make(Handlers)}
+	return &DefaultMux{
+		handlers: make(Handlers),
+		aliases:  make(map[string]string),
+	}
 }
 
 // Handlers returns list of handlers currently presented in mux
@@ -52,6 +56,12 @@ func (dm *DefaultMux) Mux(msg *Message) (*Handler, MessageVars) {
 	return dm.defaultHandler, nil
 }
 
+func (dm *DefaultMux) SetAlias(route string, aliases ...string) {
+	for _, alias := range aliases {
+		dm.aliases[alias] = route
+	}
+}
+
 // HandleFunc adds new handler function to mux, "description" is for "/help" handler.
 func (dm *DefaultMux) HandleFunc(path string, handler HandlerFunction, description ...string) {
 	dm.handlers[path] = NewHandler(handler, path, description...)
@@ -66,4 +76,7 @@ func (dm *DefaultMux) HandleDefault(handler HandlerFunction, description ...stri
 // HandleFile adds file handler. When the user uploads Document, Download method will be available for *Message.
 func (dm *DefaultMux) HandleFile(handler HandlerFunction, description ...string) {
 	dm.fileHandler = NewHandler(handler, "", description...)
+}
+
+func (db *DefaultMux) Reset(int64) {
 }

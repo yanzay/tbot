@@ -9,10 +9,12 @@ import (
 
 func (s *Server) processMessage(message *Message) {
 	if message == nil {
+		log.Debugf("nil message, return")
 		return
 	}
 	handler, data := s.chooseHandler(message)
 	if handler == nil {
+		log.Debugf("nil handler, return")
 		return
 	}
 	f := handler.f
