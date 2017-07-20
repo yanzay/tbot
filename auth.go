@@ -5,7 +5,7 @@ func NewAuth(whitelist []string) Middleware {
 	return func(f HandlerFunction) HandlerFunction {
 		return func(m *Message) {
 			for _, name := range whitelist {
-				if m.From == name {
+				if m.From.UserName == name {
 					f(m)
 					return
 				}
@@ -16,5 +16,5 @@ func NewAuth(whitelist []string) Middleware {
 }
 
 func accessDenied(m *Message) {
-	m.Replyf("Access denied for user %s", m.From)
+	m.Replyf("Access denied for user %s", m.From.UserName)
 }

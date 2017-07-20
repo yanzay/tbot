@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/yanzay/tbot/internal/adapter"
+	"github.com/yanzay/tbot/model"
 )
 
 // MessageVars is a parsed message variables lookup table
@@ -16,20 +16,20 @@ type MessageVars map[string]string
 
 // Message is a received message from chat, with parsed variables
 type Message struct {
-	*adapter.Message
+	*model.Message
 	Vars MessageVars
 }
 
 // MessageOption is a functional option for text messages
-type MessageOption func(*adapter.Message)
+type MessageOption func(*model.Message)
 
 // DisablePreview option disables web page preview when sending links.
-var DisablePreview = func(msg *adapter.Message) {
+var DisablePreview = func(msg *model.Message) {
 	msg.DisablePreview = true
 }
 
 // WithMarkdown option enables Markdown style formatting for text messages.
-var WithMarkdown = func(msg *adapter.Message) {
+var WithMarkdown = func(msg *model.Message) {
 	msg.Markdown = true
 }
 
@@ -40,9 +40,9 @@ func (m *Message) Text() string {
 
 // Reply to the user with plain text
 func (m *Message) Reply(reply string, options ...MessageOption) {
-	msg := &adapter.Message{
+	msg := &model.Message{
 		ChatID: m.ChatID,
-		Type:   adapter.MessageText,
+		Type:   model.MessageText,
 		Data:   reply,
 	}
 	for _, option := range options {
@@ -58,8 +58,8 @@ func (m *Message) Replyf(reply string, values ...interface{}) {
 
 // ReplySticker sends sticker to the chat.
 func (m *Message) ReplySticker(filepath string) {
-	msg := &adapter.Message{
-		Type:   adapter.MessageSticker,
+	msg := &model.Message{
+		Type:   model.MessageSticker,
 		Data:   filepath,
 		ChatID: m.ChatID,
 	}
@@ -68,8 +68,8 @@ func (m *Message) ReplySticker(filepath string) {
 
 // ReplyPhoto sends photo to the chat. Has optional caption.
 func (m *Message) ReplyPhoto(filepath string, caption ...string) {
-	msg := &adapter.Message{
-		Type:   adapter.MessagePhoto,
+	msg := &model.Message{
+		Type:   model.MessagePhoto,
 		Data:   filepath,
 		ChatID: m.ChatID,
 	}
@@ -81,8 +81,8 @@ func (m *Message) ReplyPhoto(filepath string, caption ...string) {
 
 // ReplyAudio sends audio file to chat
 func (m *Message) ReplyAudio(filepath string) {
-	msg := &adapter.Message{
-		Type:   adapter.MessageAudio,
+	msg := &model.Message{
+		Type:   model.MessageAudio,
 		Data:   filepath,
 		ChatID: m.ChatID,
 	}
@@ -91,8 +91,8 @@ func (m *Message) ReplyAudio(filepath string) {
 
 // ReplyDocument sends generic file (not audio, voice, image) to the chat
 func (m *Message) ReplyDocument(filepath string) {
-	msg := &adapter.Message{
-		Type:   adapter.MessageDocument,
+	msg := &model.Message{
+		Type:   model.MessageDocument,
 		Data:   filepath,
 		ChatID: m.ChatID,
 	}
@@ -100,17 +100,17 @@ func (m *Message) ReplyDocument(filepath string) {
 }
 
 // KeyboardOption is a functional option for custom keyboards
-type KeyboardOption func(*adapter.Message)
+type KeyboardOption func(*model.Message)
 
 // OneTimeKeyboard option sends keyboard that hides after the user use it once.
-var OneTimeKeyboard = func(msg *adapter.Message) {
+var OneTimeKeyboard = func(msg *model.Message) {
 	msg.OneTimeKeyboard = true
 }
 
 // ReplyKeyboard sends custom reply keyboard to the user.
 func (m *Message) ReplyKeyboard(text string, buttons [][]string, options ...KeyboardOption) {
-	msg := &adapter.Message{
-		Type:    adapter.MessageKeyboard,
+	msg := &model.Message{
+		Type:    model.MessageKeyboard,
 		Data:    text,
 		Buttons: buttons,
 		ChatID:  m.ChatID,
@@ -123,7 +123,7 @@ func (m *Message) ReplyKeyboard(text string, buttons [][]string, options ...Keyb
 
 // Download file from FileHandler
 func (m *Message) Download(dir string) error {
-	if m.Type != adapter.MessageDocument {
+	if m.Type != model.MessageDocument {
 		return fmt.Errorf("Nothing to download")
 	}
 
