@@ -22,4 +22,5 @@ type Message struct {
 	Markdown        bool
 	Buttons         [][]string
 	OneTimeKeyboard bool
+	ForwardDate     int
 }
