@@ -22,6 +22,7 @@ type Message struct {
 	Markdown        bool
 	Buttons         [][]string
 	OneTimeKeyboard bool
+	ForwardDate     int
 }
 
 // User is a user on Telegram.

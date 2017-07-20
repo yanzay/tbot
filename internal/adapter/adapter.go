@@ -85,6 +85,7 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *mode
 		message := &model.Message{
 			Replies: make(chan *model.Message),
 			ChatID:  updateMessage.Chat.ID,
+			ForwardDate: updateMessage.ForwardDate,
 		}
 		if updateMessage.From != nil {
 			message.From = model.User{
