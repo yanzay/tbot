@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/yanzay/tbot/internal/adapter"
+	"github.com/yanzay/tbot/model"
 )
 
 func TestMain(m *testing.M) {
@@ -18,19 +19,19 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-var inputMessages = make(chan *adapter.Message)
-var outputMessages = make(chan *adapter.Message)
+var inputMessages = make(chan *model.Message)
+var outputMessages = make(chan *model.Message)
 
 type mockBot struct{}
 
-func (*mockBot) Send(m *adapter.Message) error {
+func (*mockBot) Send(m *model.Message) error {
 	go func() {
 		outputMessages <- m
 	}()
 	return nil
 }
 
-func (*mockBot) GetUpdatesChan(webhookURL string, listenAddr string) (<-chan *adapter.Message, error) {
+func (*mockBot) GetUpdatesChan(webhookURL string, listenAddr string) (<-chan *model.Message, error) {
 	return inputMessages, nil
 }
 
@@ -46,14 +47,14 @@ func TestTextReply(t *testing.T) {
 	setup := func(s *Server) {
 		s.Handle("/hi", "hi")
 	}
-	requestResponse(t, setup, "/hi", adapter.MessageText, "hi", adapter.MessageText)
+	requestResponse(t, setup, "/hi", model.MessageText, "hi", model.MessageText)
 }
 
 func TestStickerReply(t *testing.T) {
 	setup := func(s *Server) {
 		s.HandleFunc("/sticker", func(m *Message) { m.ReplySticker("sticker.png") })
 	}
-	requestResponse(t, setup, "/sticker", adapter.MessageText, "sticker.png", adapter.MessageSticker)
+	requestResponse(t, setup, "/sticker", model.MessageText, "sticker.png", model.MessageSticker)
 }
 
 func TestDocumentUpload(t *testing.T) {
@@ -68,7 +69,7 @@ func TestDocumentUpload(t *testing.T) {
 	}
 	requestResponse(t, setup,
 		"https://raw.githubusercontent.com/yanzay/tbot/master/LICENSE",
-		adapter.MessageDocument, "OK", adapter.MessageText)
+		model.MessageDocument, "OK", model.MessageText)
 }
 
 func TestKeyboardReply(t *testing.T) {
@@ -77,13 +78,13 @@ func TestKeyboardReply(t *testing.T) {
 			m.ReplyKeyboard("keys", [][]string{{"hi"}})
 		})
 	}
-	requestResponse(t, setup, "/keyboard", adapter.MessageText, "keys", adapter.MessageKeyboard)
+	requestResponse(t, setup, "/keyboard", model.MessageText, "keys", model.MessageKeyboard)
 }
 
-func requestResponse(t *testing.T, setup func(*Server), inData string, inType adapter.MessageType, outData string, outType adapter.MessageType) {
-	inputMessages = make(chan *adapter.Message)
+func requestResponse(t *testing.T, setup func(*Server), inData string, inType model.MessageType, outData string, outType model.MessageType) {
+	inputMessages = make(chan *model.Message)
 	defer close(inputMessages)
-	outputMessages = make(chan *adapter.Message)
+	outputMessages = make(chan *model.Message)
 	defer close(outputMessages)
 	s, err := NewServer("TEST:TOKEN")
 	if err != nil {
@@ -96,10 +97,10 @@ func requestResponse(t *testing.T, setup func(*Server), inData string, inType ad
 			t.Errorf("Error listening and serving: %q", err)
 		}
 	}()
-	inputMessages <- &adapter.Message{
+	inputMessages <- &model.Message{
 		Data:    inData,
 		Type:    inType,
-		Replies: make(chan *adapter.Message),
+		Replies: make(chan *model.Message),
 	}
 	out := <-outputMessages
 	if out.Type != outType {
