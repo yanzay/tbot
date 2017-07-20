@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/yanzay/tbot/model"
-	"github.com/yanzay/tbot"
 )
 
 func TestReply(t *testing.T) {
@@ -65,7 +64,7 @@ func mockMessage() *Message {
 	m := &Message{
 		Message: &model.Message{
 			ChatID: 13666,
-			From: tbot.User{
+			From: model.User{
 				UserName: "me",
 			},
 			Replies: make(chan *model.Message),
