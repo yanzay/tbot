@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/yanzay/log"
-	"github.com/yanzay/tbot/internal/adapter"
+	"github.com/yanzay/tbot/model"
 )
 
 func (s *Server) processMessage(message *Message) {
@@ -30,7 +30,7 @@ func (s *Server) processMessage(message *Message) {
 func (s *Server) chooseHandler(message *Message) (*Handler, MessageVars) {
 	var handler *Handler
 	var data MessageVars
-	if message.Type == adapter.MessageDocument {
+	if message.Type == model.MessageDocument {
 		handler = s.mux.FileHandler()
 		data = map[string]string{"url": message.Data}
 	} else {
@@ -41,7 +41,7 @@ func (s *Server) chooseHandler(message *Message) (*Handler, MessageVars) {
 	return handler, data
 }
 
-func (s *Server) messageLoop(replies <-chan *adapter.Message) {
+func (s *Server) messageLoop(replies <-chan *model.Message) {
 	for reply := range replies {
 		err := s.bot.Send(reply)
 		if err != nil {

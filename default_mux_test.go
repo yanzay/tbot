@@ -3,7 +3,7 @@ package tbot
 import (
 	"testing"
 
-	"github.com/yanzay/tbot/internal/adapter"
+	"github.com/yanzay/tbot/model"
 )
 
 func TestDefaultMux(t *testing.T) {
@@ -94,5 +94,5 @@ func TestHandlers(t *testing.T) {
 }
 
 func message(text string) *Message {
-	return &Message{Message: &adapter.Message{Data: text}}
+	return &Message{Message: &model.Message{Data: text}}
 }

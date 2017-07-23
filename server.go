@@ -2,6 +2,7 @@ package tbot
 
 import (
 	"github.com/yanzay/tbot/internal/adapter"
+	"github.com/yanzay/tbot/model"
 )
 
 // Server is a telegram bot server. Looks and feels like net/http.
@@ -108,7 +109,7 @@ func (s *Server) SetAlias(route string, aliases ...string) {
 }
 
 func (s *Server) Send(chatID int64, text string) {
-	s.bot.Send(&adapter.Message{Type: adapter.MessageText, ChatID: chatID, Data: text})
+	s.bot.Send(&model.Message{Type: model.MessageText, ChatID: chatID, Data: text})
 }
 
 func (s *Server) Reset(chatID int64) {

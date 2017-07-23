@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yanzay/tbot/internal/adapter"
+	"github.com/yanzay/tbot/model"
 )
 
 type testSequence struct {
@@ -85,7 +85,7 @@ func routerMuxFlow(t *testing.T, mux Mux, seq testSequence) {
 	path := make([]string, 0)
 	for _, input := range seq.flow {
 		msg := &Message{
-			Message: &adapter.Message{Data: input},
+			Message: &model.Message{Data: input},
 			Vars:    make(map[string]string),
 		}
 		h, _ := mux.Mux(msg)

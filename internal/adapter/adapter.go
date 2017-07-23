@@ -6,11 +6,12 @@ import (
 	"net/http"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/yanzay/tbot/model"
 )
 
 type BotAdapter interface {
-	Send(*Message) error
-	GetUpdatesChan(string, string) (<-chan *Message, error)
+	Send(*model.Message) error
+	GetUpdatesChan(string, string) (<-chan *model.Message, error)
 	GetUserName() string
 	GetFirstName() string
 }
@@ -27,7 +28,7 @@ func CreateBot(token string) (BotAdapter, error) {
 	return &Bot{tbot: tbot}, nil
 }
 
-func (b *Bot) Send(m *Message) error {
+func (b *Bot) Send(m *model.Message) error {
 	c := chattableFromMessage(m)
 	if c != nil {
 		_, err := b.tbot.Send(c)
@@ -36,8 +37,8 @@ func (b *Bot) Send(m *Message) error {
 	return fmt.Errorf("Trying to send nil chattable. Message: %v", m)
 }
 
-func (b *Bot) GetUpdatesChan(webhookURL string, listenAddr string) (<-chan *Message, error) {
-	messages := make(chan *Message)
+func (b *Bot) GetUpdatesChan(webhookURL string, listenAddr string) (<-chan *model.Message, error) {
+	messages := make(chan *model.Message)
 	var updates <-chan tgbotapi.Update
 	var err error
 	if webhookURL == "" {
@@ -66,7 +67,7 @@ func (b *Bot) GetFirstName() string {
 	return b.tbot.Self.FirstName
 }
 
-func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *Message) {
+func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *model.Message) {
 	var err error
 	for update := range updates {
 		var updateMessage *tgbotapi.Message
@@ -81,16 +82,23 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *Mess
 			continue
 		}
 
-		message := &Message{
-			Replies: make(chan *Message),
+		message := &model.Message{
+			Replies: make(chan *model.Message),
 			ChatID:  updateMessage.Chat.ID,
+			ForwardDate: updateMessage.ForwardDate,
 		}
 		if updateMessage.From != nil {
-			message.From = updateMessage.From.UserName
+			message.From = model.User{
+				updateMessage.From.ID,
+				updateMessage.From.FirstName,
+				updateMessage.From.LastName,
+				updateMessage.From.UserName,
+				updateMessage.From.LanguageCode,
+			}
 		}
 		switch {
 		case updateMessage.Document != nil:
-			message.Type = MessageDocument
+			message.Type = model.MessageDocument
 			message.Data, err = b.tbot.GetFileDirectURL(updateMessage.Document.FileID)
 			if err != nil {
 				log.Println(err)
@@ -98,33 +106,33 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *Mess
 			}
 			messages <- message
 		case updateMessage.Text != "":
-			message.Type = MessageText
+			message.Type = model.MessageText
 			message.Data = updateMessage.Text
 			messages <- message
 		}
 	}
 }
 
-func chattableFromMessage(m *Message) tgbotapi.Chattable {
+func chattableFromMessage(m *model.Message) tgbotapi.Chattable {
 	switch m.Type {
-	case MessageText:
+	case model.MessageText:
 		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
 		msg.DisableWebPagePreview = m.DisablePreview
 		if m.Markdown {
 			msg.ParseMode = tgbotapi.ModeMarkdown
 		}
 		return msg
-	case MessageSticker:
+	case model.MessageSticker:
 		return tgbotapi.NewStickerUpload(m.ChatID, m.Data)
-	case MessagePhoto:
+	case model.MessagePhoto:
 		photo := tgbotapi.NewPhotoUpload(m.ChatID, m.Data)
 		photo.Caption = m.Caption
 		return photo
-	case MessageAudio:
+	case model.MessageAudio:
 		return tgbotapi.NewAudioUpload(m.ChatID, m.Data)
-	case MessageDocument:
+	case model.MessageDocument:
 		return tgbotapi.NewDocumentUpload(m.ChatID, m.Data)
-	case MessageKeyboard:
+	case model.MessageKeyboard:
 		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
 		btns := buttonsFromStrings(m.Buttons)
 		keyboard := tgbotapi.NewReplyKeyboard(btns...)
