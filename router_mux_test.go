@@ -38,12 +38,19 @@ func TestRouterMux(t *testing.T) {
 			[]string{"meals", "pizza", "popcorn", RouteBack},
 			"meals pizza popcorn index",
 		},
+		{
+			[]string{"/pets", "cat", RouteRoot, "pets"},
+			"pets cat index pets",
+		},
 	}
 	for _, seq := range seqs {
 		rm := NewRouterMux(NewSessionStorage())
 		rm.HandleFunc(RouteRoot, indexHandler)
+		rm.HandleFunc("/start", startHandler)
+		rm.HandleFunc("/start {var}", startVarHandler)
 		rm.HandleFunc("/pets", petsHandler)
 		rm.HandleFunc("/pets/cat", catHandler)
+		rm.HandleFunc("/pets/cat {var}", catVarHandler)
 		rm.HandleFunc("/meals", mealsHandler)
 		rm.HandleFunc("/meals/pizza", pizzaHandler)
 		rm.HandleFunc("/meals/popcorn", popcornHandler)
@@ -65,12 +72,31 @@ func TestRouterAliases(t *testing.T) {
 			[]string{"Home", "pets", "Kitty", RouteRefresh},
 			"index pets cat pets",
 		},
+		{
+			[]string{"/start", "pets", "Kitty meow"},
+			"index pets meow",
+		},
+		{
+			[]string{"/start 128325", "pets", "Cat"},
+			"128325 pets cat",
+		},
+		{
+			[]string{"  /start 128325", "pets", "Cat"},
+			"128325 pets cat",
+		}, {
+			[]string{"/start 128 325", "pets", "Cat", "unknown-text"},
+			"128 325 pets cat default",
+		},
 	}
 	for _, seq := range seqs {
 		rm := NewRouterMux(NewSessionStorage())
+		rm.HandleDefault(defaultHandler)
 		rm.HandleFunc(RouteRoot, indexHandler)
+		rm.HandleFunc("/start", startHandler)
+		rm.HandleFunc("/start {var}", startVarHandler)
 		rm.HandleFunc("/pets", petsHandler)
 		rm.HandleFunc("/pets/cat", catHandler)
+		rm.HandleFunc("/pets/cat {var}", catVarHandler)
 		rm.HandleFunc("/pictures", pictureshandler)
 		rm.HandleFunc("/pictures/cat", picCatHandler)
 		rm.SetAlias(RouteRoot, "Home")
@@ -88,7 +114,10 @@ func routerMuxFlow(t *testing.T, mux Mux, seq testSequence) {
 			Message: &model.Message{Data: input},
 			Vars:    make(map[string]string),
 		}
-		h, _ := mux.Mux(msg)
+		h,vars := mux.Mux(msg)
+		if vars != nil {
+			msg.Vars = vars
+		}
 		if h == nil {
 			t.Errorf("Handler is nil for message: %s", input)
 		}
@@ -101,9 +130,13 @@ func routerMuxFlow(t *testing.T, mux Mux, seq testSequence) {
 	}
 }
 
+func defaultHandler(m *Message)  { m.Vars["path"] = "default" }
 func indexHandler(m *Message)    { m.Vars["path"] = "index" }
+func startHandler(m *Message)    { m.Vars["path"] = "index" }
+func startVarHandler(m *Message) { m.Vars["path"] = m.Vars["var"] }
 func petsHandler(m *Message)     { m.Vars["path"] = "pets" }
 func catHandler(m *Message)      { m.Vars["path"] = "cat" }
+func catVarHandler(m *Message)   { m.Vars["path"] = m.Vars["var"] }
 func pictureshandler(m *Message) { m.Vars["path"] = "pictures" }
 func picCatHandler(m *Message)   { m.Vars["path"] = "piccat" }
 func mealsHandler(m *Message)    { m.Vars["path"] = "meals" }

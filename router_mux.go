@@ -1,6 +1,9 @@
 package tbot
 
-import "strings"
+import (
+	"regexp"
+	"strings"
+)
 
 const (
 	RouteBack    = "<..>"
@@ -60,35 +63,54 @@ func (rm *RouterMux) FileHandler() *Handler {
 // Mux takes message content and returns corresponding handler
 func (rm *RouterMux) Mux(msg *Message) (*Handler, MessageVars) {
 	var node *Node
-	route := msg.Data
-	if _, ok := rm.aliases[route]; ok {
-		route = rm.aliases[route]
+	var messageData map[string]string = nil
+	fields := strings.Fields(msg.Data)
+	if len(fields) >= 1 {
+		if alias, ok := rm.aliases[fields[0]]; ok {
+			fields[0] = alias
+		}
 	}
-	if route == RouteRoot {
+	path := strings.Join(fields, " ")
+	state := rm.storage.Get(msg.ChatID)
+	if state == "" {
+		state = RouteRoot
+	}
+	node = rm.findNode(state)
+	if node == nil {
+		return nil, nil
+	}
+switch_route:
+	switch path {
+	case RouteRoot:
 		node = rm.root
-	} else {
-		state := rm.storage.Get(msg.ChatID)
-		if state == "" {
-			state = RouteRoot
+	case RouteBack:
+		node = node.parent
+	case RouteRefresh:
+	default:
+		if !strings.HasPrefix(path, "/") {
+			path = "/" + path
 		}
-		node = rm.findNode(state)
-		if node == nil {
-			return nil, nil
-		}
-		switch route {
-		case RouteBack:
-			node = node.parent
-		case RouteRefresh:
-		default:
-			if child, ok := node.children[route]; ok {
+		path = state + path
+		for _, child := range node.children {
+			re := regexp.MustCompile(child.handler.pattern)
+			matches := re.FindStringSubmatch(path)
+			if len(matches) > 0 {
 				node = child
-			} else {
-				return rm.defaultHandler, nil
+				matches = matches[1:]
+				if len(matches) > 0 {
+					messageData = make(map[string]string)
+					for i, match := range matches {
+						messageData[child.handler.variables[i]] = match
+					}
+				}
+				break switch_route
 			}
 		}
+		return rm.defaultHandler, nil
 	}
+
 	rm.storage.Set(msg.ChatID, nodeToState(node))
-	return node.handler, MessageVars{}
+	return node.handler, messageData
 }
 
 func (rm *RouterMux) findNode(path string) *Node {
