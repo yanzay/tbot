@@ -71,45 +71,44 @@ func (rm *RouterMux) Mux(msg *Message) (*Handler, MessageVars) {
 		}
 	}
 	path := strings.Join(fields, " ")
-	if path == RouteRoot {
-		node = rm.root
-	} else {
-		state := rm.storage.Get(msg.ChatID)
-		if state == "" {
-			state = RouteRoot
-		}
-		node = rm.findNode(state)
-		if node == nil {
-			return nil, nil
-		}
-	switch_route:
-		switch path {
-		case RouteBack:
-			node = node.parent
-		case RouteRefresh:
-		default:
-			if !strings.HasPrefix(path, "/") {
-				path = "/" + path
-			}
-			path = state + path
-			for _, child := range node.children {
-				re := regexp.MustCompile(child.handler.pattern)
-				matches := re.FindStringSubmatch(path)
-				if len(matches) > 0 {
-					node = child
-					matches = matches[1:]
-					if len(matches) > 0 {
-						messageData = make(map[string]string)
-						for i, match := range matches {
-							messageData[child.handler.variables[i]] = match
-						}
-					}
-					break switch_route
-				}
-			}
-			return rm.defaultHandler, nil
-		}
+	state := rm.storage.Get(msg.ChatID)
+	if state == "" {
+		state = RouteRoot
 	}
+	node = rm.findNode(state)
+	if node == nil {
+		return nil, nil
+	}
+switch_route:
+	switch path {
+	case RouteRoot:
+		node = rm.root
+	case RouteBack:
+		node = node.parent
+	case RouteRefresh:
+	default:
+		if !strings.HasPrefix(path, "/") {
+			path = "/" + path
+		}
+		path = state + path
+		for _, child := range node.children {
+			re := regexp.MustCompile(child.handler.pattern)
+			matches := re.FindStringSubmatch(path)
+			if len(matches) > 0 {
+				node = child
+				matches = matches[1:]
+				if len(matches) > 0 {
+					messageData = make(map[string]string)
+					for i, match := range matches {
+						messageData[child.handler.variables[i]] = match
+					}
+				}
+				break switch_route
+			}
+		}
+		return rm.defaultHandler, nil
+	}
+
 	rm.storage.Set(msg.ChatID, nodeToState(node))
 	return node.handler, messageData
 }
