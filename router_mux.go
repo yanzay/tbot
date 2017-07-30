@@ -84,7 +84,11 @@ switch_route:
 	case RouteRoot:
 		node = rm.root
 	case RouteBack:
-		node = node.parent
+		if node.parent == nil {
+			node = rm.root
+		} else {
+			node = node.parent
+		}
 	case RouteRefresh:
 	default:
 		if !strings.HasPrefix(path, "/") {
