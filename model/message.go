@@ -11,6 +11,13 @@ const (
 	MessageKeyboard
 )
 
+const (
+	ChatTypePrivate    = "private"
+	ChatTypeGroup      = "group"
+	ChatTypeSuperGroup = "supergroup"
+	ChatTypeChannel    = "channel"
+)
+
 type Message struct {
 	Type            MessageType
 	Data            string
@@ -18,6 +25,7 @@ type Message struct {
 	Replies         chan *Message
 	From            User
 	ChatID          int64
+	ChatType        string
 	DisablePreview  bool
 	Markdown        bool
 	Buttons         [][]string
