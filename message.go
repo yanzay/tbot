@@ -17,7 +17,8 @@ type MessageVars map[string]string
 // Message is a received message from chat, with parsed variables
 type Message struct {
 	*model.Message
-	Vars MessageVars
+	Vars         MessageVars
+	replyChannel chan *model.Message
 }
 
 // MessageOption is a functional option for text messages
@@ -48,7 +49,7 @@ func (m *Message) Reply(reply string, options ...MessageOption) {
 	for _, option := range options {
 		option(msg)
 	}
-	m.Replies <- msg
+	m.sendReply(msg)
 }
 
 // Replyf is a formatted reply to the user with plain text, with parameters like in fmt.Printf
@@ -63,7 +64,7 @@ func (m *Message) ReplySticker(filepath string) {
 		Data:   filepath,
 		ChatID: m.ChatID,
 	}
-	m.Replies <- msg
+	m.sendReply(msg)
 }
 
 // ReplyPhoto sends photo to the chat. Has optional caption.
@@ -76,7 +77,7 @@ func (m *Message) ReplyPhoto(filepath string, caption ...string) {
 	if len(caption) > 0 {
 		msg.Caption = caption[0]
 	}
-	m.Replies <- msg
+	m.sendReply(msg)
 }
 
 // ReplyAudio sends audio file to chat
@@ -86,7 +87,7 @@ func (m *Message) ReplyAudio(filepath string) {
 		Data:   filepath,
 		ChatID: m.ChatID,
 	}
-	m.Replies <- msg
+	m.sendReply(msg)
 }
 
 // ReplyDocument sends generic file (not audio, voice, image) to the chat
@@ -96,7 +97,7 @@ func (m *Message) ReplyDocument(filepath string) {
 		Data:   filepath,
 		ChatID: m.ChatID,
 	}
-	m.Replies <- msg
+	m.sendReply(msg)
 }
 
 // KeyboardOption is a functional option for custom keyboards
@@ -118,7 +119,7 @@ func (m *Message) ReplyKeyboard(text string, buttons [][]string, options ...Keyb
 	for _, option := range options {
 		option(msg)
 	}
-	m.Replies <- msg
+	m.sendReply(msg)
 }
 
 // Download file from FileHandler
@@ -154,4 +155,17 @@ func (m *Message) Download(dir string) error {
 		return fmt.Errorf("[Tbot] Error downloading file: %q", err)
 	}
 	return nil
+}
+
+// SetReplyChannel sets channel for custom reply handling, e. g. for tests
+func (m *Message) SetReplyChannel(ch chan *model.Message) {
+	m.replyChannel = ch
+}
+
+func (m *Message) sendReply(msg *model.Message) {
+	if m.replyChannel != nil {
+		m.replyChannel <- msg
+	} else {
+		m.Replies <- msg
+	}
 }
