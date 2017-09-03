@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/yanzay/tbot/model"
@@ -127,12 +129,16 @@ func chattableFromMessage(m *model.Message) tgbotapi.Chattable {
 		return tgbotapi.NewStickerUpload(m.ChatID, m.Data)
 	case model.MessagePhoto:
 		photo := tgbotapi.NewPhotoUpload(m.ChatID, m.Data)
+		photo = tgbotapi.PhotoConfig{BaseFile: fileMessage(m, photo.BaseFile)}
 		photo.Caption = m.Caption
 		return photo
 	case model.MessageAudio:
-		return tgbotapi.NewAudioUpload(m.ChatID, m.Data)
+		msg := tgbotapi.NewAudioUpload(m.ChatID, m.Data)
+		msg = tgbotapi.AudioConfig{BaseFile: fileMessage(m, msg.BaseFile)}
 	case model.MessageDocument:
-		return tgbotapi.NewDocumentUpload(m.ChatID, m.Data)
+		msg := tgbotapi.NewDocumentUpload(m.ChatID, nil)
+		msg = tgbotapi.DocumentConfig{BaseFile: fileMessage(m, msg.BaseFile)}
+		return msg
 	case model.MessageKeyboard:
 		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
 		btns := buttonsFromStrings(m.Buttons)
@@ -156,4 +162,17 @@ func buttonsFromStrings(strs [][]string) [][]tgbotapi.KeyboardButton {
 		}
 	}
 	return btns
+}
+
+func fileMessage(m *model.Message, file tgbotapi.BaseFile) tgbotapi.BaseFile {
+	if strings.HasPrefix(m.Data, "http") {
+		_, err := url.Parse(m.Data)
+		if err != nil {
+			return file
+		}
+		file.FileID = m.Data
+		file.UseExisting = true
+		return file
+	}
+	return file
 }
