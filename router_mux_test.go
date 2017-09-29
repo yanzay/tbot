@@ -69,6 +69,10 @@ func TestRouterAliases(t *testing.T) {
 			"index pets index pictures piccat",
 		},
 		{
+			[]string{"Home", "Beautiful Paintings"},
+			"index pictures",
+		},
+		{
 			[]string{"Home", "pets", "Kitty", RouteRefresh},
 			"index pets cat pets",
 		},
@@ -102,7 +106,7 @@ func TestRouterAliases(t *testing.T) {
 		rm.SetAlias(RouteRoot, "Home")
 		rm.SetAlias("pets", "Pets")
 		rm.SetAlias("cat", "Cat", "Kitty")
-		rm.SetAlias("pictures", "Pictures")
+		rm.SetAlias("pictures", "Pictures", "Beautiful Paintings")
 		routerMuxFlow(t, rm, seq)
 	}
 }
@@ -114,7 +118,7 @@ func routerMuxFlow(t *testing.T, mux Mux, seq testSequence) {
 			Message: &model.Message{Data: input},
 			Vars:    make(map[string]string),
 		}
-		h,vars := mux.Mux(msg)
+		h, vars := mux.Mux(msg)
 		if vars != nil {
 			msg.Vars = vars
 		}

@@ -63,14 +63,19 @@ func (rm *RouterMux) FileHandler() *Handler {
 // Mux takes message content and returns corresponding handler
 func (rm *RouterMux) Mux(msg *Message) (*Handler, MessageVars) {
 	var node *Node
-	var messageData map[string]string = nil
-	fields := strings.Fields(msg.Data)
-	if len(fields) >= 1 {
-		if alias, ok := rm.aliases[fields[0]]; ok {
-			fields[0] = alias
+	var messageData map[string]string
+	var path string
+	if _, ok := rm.aliases[msg.Data]; ok {
+		path = rm.aliases[msg.Data]
+	} else {
+		fields := strings.Fields(msg.Data)
+		if len(fields) >= 1 {
+			if alias, ok := rm.aliases[fields[0]]; ok {
+				fields[0] = alias
+			}
 		}
+		path = strings.Join(fields, " ")
 	}
-	path := strings.Join(fields, " ")
 	state := rm.storage.Get(msg.ChatID)
 	if state == "" {
 		state = RouteRoot
