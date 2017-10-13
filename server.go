@@ -108,8 +108,8 @@ func (s *Server) SetAlias(route string, aliases ...string) {
 	s.mux.SetAlias(route, aliases...)
 }
 
-func (s *Server) Send(chatID int64, text string) {
-	s.bot.Send(&model.Message{Type: model.MessageText, ChatID: chatID, Data: text})
+func (s *Server) Send(chatID int64, text string) error {
+	return s.bot.Send(&model.Message{Type: model.MessageText, ChatID: chatID, Data: text})
 }
 
 func (s *Server) Reset(chatID int64) {
