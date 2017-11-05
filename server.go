@@ -1,8 +1,10 @@
 package tbot
 
 import (
-	"github.com/yanzay/tbot/internal/adapter"
-	"github.com/yanzay/tbot/model"
+	"net/http"
+
+	"github.com/variar/tbot/internal/adapter"
+	"github.com/variar/tbot/model"
 )
 
 // Server is a telegram bot server. Looks and feels like net/http.
@@ -18,8 +20,8 @@ type Server struct {
 // Should call it's argument function inside, if needed.
 type Middleware func(HandlerFunction) HandlerFunction
 
-var createBot = func(token string) (adapter.BotAdapter, error) {
-	return adapter.CreateBot(token)
+var createBot = func(token string, httpClient *http.Client) (adapter.BotAdapter, error) {
+	return adapter.CreateBot(token, httpClient)
 }
 
 // ServerOption is a functional option for Server
@@ -42,9 +44,15 @@ func WithMux(m Mux) ServerOption {
 }
 
 // NewServer creates new Server with Telegram API Token
-// and default /help handler
+// and default /help handler using go default http client
 func NewServer(token string, options ...ServerOption) (*Server, error) {
-	tbot, err := createBot(token)
+	return NewServerWithClient(token, http.DefaultClient, options...)
+}
+
+// NewServerWithClient creates new Server with Telegram API Token
+// and default /help handler
+func NewServerWithClient(token string, httpClient *http.Client, options ...ServerOption) (*Server, error) {
+	tbot, err := createBot(token, httpClient)
 	if err != nil {
 		return nil, err
 	}
