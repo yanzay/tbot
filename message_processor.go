@@ -3,8 +3,8 @@ package tbot
 import (
 	"strings"
 
-	"github.com/variar/tbot/model"
 	"github.com/yanzay/log"
+	"github.com/yanzay/tbot/model"
 )
 
 func (s *Server) processMessage(message *Message) {
