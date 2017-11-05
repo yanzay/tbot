@@ -2,6 +2,7 @@ package tbot
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	createBot = func(token string) (adapter.BotAdapter, error) {
+	createBot = func(token string, httpClient *http.Client) (adapter.BotAdapter, error) {
 		if token == TestToken {
 			return &mockBot{}, nil
 		}
