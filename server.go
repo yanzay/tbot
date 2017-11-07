@@ -9,11 +9,12 @@ import (
 
 // Server is a telegram bot server. Looks and feels like net/http.
 type Server struct {
-	bot         adapter.BotAdapter
 	mux         Mux
+	httpClient  *http.Client
 	middlewares []Middleware
 	webhookURL  string
 	listenAddr  string
+	bot         adapter.BotAdapter
 }
 
 // Middleware function takes HandlerFunction and returns HandlerFunction.
@@ -43,28 +44,30 @@ func WithMux(m Mux) ServerOption {
 	}
 }
 
+// WithHttpClient sets custom http client for server.
+func WithHttpClient(client *http.Client) ServerOption {
+	return func(s *Server) {
+		s.httpClient = client
+	}
+}
+
 // NewServer creates new Server with Telegram API Token
 // and default /help handler using go default http client
 func NewServer(token string, options ...ServerOption) (*Server, error) {
-	return NewServerWithClient(token, http.DefaultClient, options...)
-}
-
-// NewServerWithClient creates new Server with Telegram API Token
-// and default /help handler
-func NewServerWithClient(token string, httpClient *http.Client, options ...ServerOption) (*Server, error) {
-	tbot, err := createBot(token, httpClient)
-	if err != nil {
-		return nil, err
-	}
-
 	server := &Server{
-		bot: tbot,
-		mux: NewDefaultMux(),
+		mux:        NewDefaultMux(),
+		httpClient: http.DefaultClient,
 	}
 
 	for _, option := range options {
 		option(server)
 	}
+
+	tbot, err := createBot(token, server.httpClient)
+	if err != nil {
+		return nil, err
+	}
+	server.bot = tbot
 
 	server.HandleFunc("/help", server.HelpHandler)
 
