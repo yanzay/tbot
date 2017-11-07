@@ -22,8 +22,8 @@ type Bot struct {
 	tbot *tgbotapi.BotAPI
 }
 
-func CreateBot(token string) (BotAdapter, error) {
-	tbot, err := tgbotapi.NewBotAPI(token)
+func CreateBot(token string, httpClient *http.Client) (BotAdapter, error) {
+	tbot, err := tgbotapi.NewBotAPIWithClient(token, httpClient)
 	if err != nil {
 		return nil, err
 	}
