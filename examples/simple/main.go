@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/yanzay/tbot"
+	"github.com/eeonevision/tbot"
 )
 
 func main() {
