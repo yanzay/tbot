@@ -122,6 +122,20 @@ func (m *Message) ReplyKeyboard(text string, buttons [][]string, options ...Keyb
 	m.sendReply(msg)
 }
 
+// ReplySpecialKeyboard sends custom reply keyboard to the user with included special buttons.
+func (m *Message) ReplySpecialKeyboard(text string, buttons [][]model.KeyboardButton, options ...KeyboardOption) {
+	msg := &model.Message{
+		Type:           model.MessageSpecialKeyboard,
+		Data:           text,
+		SpecialButtons: buttons,
+		ChatID:         m.ChatID,
+	}
+	for _, option := range options {
+		option(msg)
+	}
+	m.sendReply(msg)
+}
+
 // Download file from FileHandler
 func (m *Message) Download(dir string) error {
 	if m.Type != model.MessageDocument {
