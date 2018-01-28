@@ -4,6 +4,8 @@ type MessageType int
 
 const (
 	MessageText MessageType = iota
+	MessageContact
+	MessageLocation
 	MessageDocument
 	MessageSticker
 	MessagePhoto
