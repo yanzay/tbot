@@ -126,6 +126,12 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *mode
 			message.Type = model.MessageText
 			message.Data = updateMessage.Text
 			messages <- message
+		case updateMessage.Contact.PhoneNumber != "":
+			message.Type = model.MessageContact
+			messages <- message
+		case updateMessage.Location != nil:
+			message.Type = model.MessageLocation
+			messages <- message
 		}
 	}
 }
@@ -138,6 +144,12 @@ func chattableFromMessage(m *model.Message) tgbotapi.Chattable {
 		if m.Markdown {
 			msg.ParseMode = tgbotapi.ModeMarkdown
 		}
+		return msg
+	case model.MessageContact:
+		msg := tgbotapi.NewContact(m.ChatID, m.Contact.PhoneNumber, m.From.FirstName)
+		return msg
+	case model.MessageLocation:
+		msg := tgbotapi.NewLocation(m.ChatID, m.Location.Latitude, m.Location.Longitude)
 		return msg
 	case model.MessageSticker:
 		return tgbotapi.NewStickerUpload(m.ChatID, m.Data)
