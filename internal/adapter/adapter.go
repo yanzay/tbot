@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/eeonevision/tbot/model"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/yanzay/tbot/model"
 )
 
 type BotAdapter interface {
@@ -99,6 +99,20 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *mode
 				LanguageCode: updateMessage.From.LanguageCode,
 			}
 		}
+		if updateMessage.Contact != nil {
+			message.Contact = model.Contact{
+				PhoneNumber: updateMessage.Contact.PhoneNumber,
+				FirstName:   updateMessage.Contact.FirstName,
+				LastName:    updateMessage.Contact.LastName,
+				UserID:      updateMessage.Contact.UserID,
+			}
+		}
+		if updateMessage.Location != nil {
+			message.Location = model.Location{
+				Longitude: updateMessage.Location.Longitude,
+				Latitude:  updateMessage.Location.Latitude,
+			}
+		}
 		switch {
 		case updateMessage.Document != nil:
 			message.Type = model.MessageDocument
@@ -149,6 +163,16 @@ func chattableFromMessage(m *model.Message) tgbotapi.Chattable {
 			msg.ParseMode = tgbotapi.ModeMarkdown
 		}
 		return msg
+	case model.MessageSpecialKeyboard:
+		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
+		btns := buttonsFromSpecialButtons(m.SpecialButtons)
+		keyboard := tgbotapi.NewReplyKeyboard(btns...)
+		keyboard.OneTimeKeyboard = m.OneTimeKeyboard
+		msg.ReplyMarkup = keyboard
+		if m.Markdown {
+			msg.ParseMode = tgbotapi.ModeMarkdown
+		}
+		return msg
 	}
 	return nil
 }
@@ -159,6 +183,21 @@ func buttonsFromStrings(strs [][]string) [][]tgbotapi.KeyboardButton {
 		btns[i] = make([]tgbotapi.KeyboardButton, len(buttonRow))
 		for j, buttonText := range buttonRow {
 			btns[i][j] = tgbotapi.NewKeyboardButton(buttonText)
+		}
+	}
+	return btns
+}
+
+func buttonsFromSpecialButtons(sbtns [][]model.KeyboardButton) [][]tgbotapi.KeyboardButton {
+	btns := make([][]tgbotapi.KeyboardButton, len(sbtns))
+	for i, buttonRow := range sbtns {
+		btns[i] = make([]tgbotapi.KeyboardButton, len(buttonRow))
+		for j, button := range buttonRow {
+			btns[i][j] = tgbotapi.KeyboardButton{
+				Text:            button.Text,
+				RequestContact:  button.RequestContact,
+				RequestLocation: button.RequestLocation,
+			}
 		}
 	}
 	return btns

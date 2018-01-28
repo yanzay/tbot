@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/yanzay/tbot/model"
+	"github.com/eeonevision/tbot/model"
 )
 
 // MessageVars is a parsed message variables lookup table
