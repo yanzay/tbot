@@ -3,7 +3,7 @@ package tbot
 import (
 	"testing"
 
-	"github.com/eeonevision/tbot/model"
+	"github.com/yanzay/tbot/model"
 )
 
 func TestDefaultMux(t *testing.T) {

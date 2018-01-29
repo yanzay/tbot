@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/eeonevision/tbot"
+	"github.com/yanzay/tbot"
 )
 
 func main() {
