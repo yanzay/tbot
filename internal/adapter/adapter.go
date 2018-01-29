@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/eeonevision/tbot/model"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/yanzay/tbot/model"
 )
 
 type BotAdapter interface {
@@ -122,15 +122,15 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *mode
 				continue
 			}
 			messages <- message
-		case updateMessage.Text != "":
-			message.Type = model.MessageText
-			message.Data = updateMessage.Text
-			messages <- message
 		case updateMessage.Contact.PhoneNumber != "":
 			message.Type = model.MessageContact
 			messages <- message
 		case updateMessage.Location != nil:
 			message.Type = model.MessageLocation
+			messages <- message
+		case updateMessage.Text != "":
+			message.Type = model.MessageText
+			message.Data = updateMessage.Text
 			messages <- message
 		}
 	}

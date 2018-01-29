@@ -3,7 +3,7 @@ package tbot
 import (
 	"testing"
 
-	"github.com/eeonevision/tbot/model"
+	"github.com/yanzay/tbot/model"
 )
 
 func TestReply(t *testing.T) {

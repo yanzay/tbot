@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/eeonevision/tbot/model"
+	"github.com/yanzay/tbot/model"
 )
 
 type testSequence struct {
