@@ -11,7 +11,8 @@ const (
 	MessagePhoto
 	MessageAudio
 	MessageKeyboard
-	MessageSpecialKeyboard
+	MessageContactButton
+	MessageLocationButton
 )
 
 const (
@@ -34,16 +35,10 @@ type Message struct {
 	DisablePreview  bool
 	Markdown        bool
 	Buttons         [][]string
-	SpecialButtons  [][]KeyboardButton
+	ContactButton   string
+	LocationButton  string
 	OneTimeKeyboard bool
 	ForwardDate     int
-}
-
-// KeyboardButton is a button within a custom keyboard.
-type KeyboardButton struct {
-	Text            string `json:"text"`
-	RequestContact  bool   `json:"request_contact"`
-	RequestLocation bool   `json:"request_location"`
 }
 
 // Contact contains information about a contact.

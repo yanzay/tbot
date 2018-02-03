@@ -114,6 +114,19 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *mode
 			}
 		}
 		switch {
+		case updateMessage.Contact != nil:
+			message.Type = model.MessageContact
+			message.Data = fmt.Sprintf("%s - %s %s",
+				updateMessage.Contact.PhoneNumber,
+				updateMessage.Contact.FirstName,
+				updateMessage.Contact.LastName)
+			messages <- message
+		case updateMessage.Location != nil:
+			message.Type = model.MessageLocation
+			message.Data = fmt.Sprintf("%v|%v",
+				updateMessage.Location.Latitude,
+				updateMessage.Location.Longitude)
+			messages <- message
 		case updateMessage.Document != nil:
 			message.Type = model.MessageDocument
 			message.Data, err = b.tbot.GetFileDirectURL(updateMessage.Document.FileID)
@@ -125,12 +138,6 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *mode
 		case updateMessage.Text != "":
 			message.Type = model.MessageText
 			message.Data = updateMessage.Text
-			messages <- message
-		case updateMessage.Contact.PhoneNumber != "":
-			message.Type = model.MessageContact
-			messages <- message
-		case updateMessage.Location != nil:
-			message.Type = model.MessageLocation
 			messages <- message
 		}
 	}
@@ -175,10 +182,24 @@ func chattableFromMessage(m *model.Message) tgbotapi.Chattable {
 			msg.ParseMode = tgbotapi.ModeMarkdown
 		}
 		return msg
-	case model.MessageSpecialKeyboard:
+	case model.MessageContactButton:
 		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
-		btns := buttonsFromSpecialButtons(m.SpecialButtons)
-		keyboard := tgbotapi.NewReplyKeyboard(btns...)
+		btn := [][]tgbotapi.KeyboardButton{
+			[]tgbotapi.KeyboardButton{
+				tgbotapi.NewKeyboardButtonContact(m.ContactButton)}}
+		keyboard := tgbotapi.NewReplyKeyboard(btn...)
+		keyboard.OneTimeKeyboard = m.OneTimeKeyboard
+		msg.ReplyMarkup = keyboard
+		if m.Markdown {
+			msg.ParseMode = tgbotapi.ModeMarkdown
+		}
+		return msg
+	case model.MessageLocationButton:
+		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
+		btn := [][]tgbotapi.KeyboardButton{
+			[]tgbotapi.KeyboardButton{
+				tgbotapi.NewKeyboardButtonLocation(m.LocationButton)}}
+		keyboard := tgbotapi.NewReplyKeyboard(btn...)
 		keyboard.OneTimeKeyboard = m.OneTimeKeyboard
 		msg.ReplyMarkup = keyboard
 		if m.Markdown {
@@ -195,21 +216,6 @@ func buttonsFromStrings(strs [][]string) [][]tgbotapi.KeyboardButton {
 		btns[i] = make([]tgbotapi.KeyboardButton, len(buttonRow))
 		for j, buttonText := range buttonRow {
 			btns[i][j] = tgbotapi.NewKeyboardButton(buttonText)
-		}
-	}
-	return btns
-}
-
-func buttonsFromSpecialButtons(sbtns [][]model.KeyboardButton) [][]tgbotapi.KeyboardButton {
-	btns := make([][]tgbotapi.KeyboardButton, len(sbtns))
-	for i, buttonRow := range sbtns {
-		btns[i] = make([]tgbotapi.KeyboardButton, len(buttonRow))
-		for j, button := range buttonRow {
-			btns[i][j] = tgbotapi.KeyboardButton{
-				Text:            button.Text,
-				RequestContact:  button.RequestContact,
-				RequestLocation: button.RequestLocation,
-			}
 		}
 	}
 	return btns
