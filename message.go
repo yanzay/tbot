@@ -122,6 +122,34 @@ func (m *Message) ReplyKeyboard(text string, buttons [][]string, options ...Keyb
 	m.sendReply(msg)
 }
 
+// RequestContactButton sends custom reply contact button to the user.
+func (m *Message) RequestContactButton(text string, button string, options ...KeyboardOption) {
+	msg := &model.Message{
+		Type:          model.MessageContactButton,
+		Data:          text,
+		ContactButton: button,
+		ChatID:        m.ChatID,
+	}
+	for _, option := range options {
+		option(msg)
+	}
+	m.sendReply(msg)
+}
+
+// RequestLocationButton sends custom reply location keyboard to the user.
+func (m *Message) RequestLocationButton(text string, button string, options ...KeyboardOption) {
+	msg := &model.Message{
+		Type:           model.MessageLocationButton,
+		Data:           text,
+		LocationButton: button,
+		ChatID:         m.ChatID,
+	}
+	for _, option := range options {
+		option(msg)
+	}
+	m.sendReply(msg)
+}
+
 // Download file from FileHandler
 func (m *Message) Download(dir string) error {
 	if m.Type != model.MessageDocument {

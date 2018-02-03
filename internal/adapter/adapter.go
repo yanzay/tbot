@@ -99,7 +99,34 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *mode
 				LanguageCode: updateMessage.From.LanguageCode,
 			}
 		}
+		if updateMessage.Contact != nil {
+			message.Contact = model.Contact{
+				PhoneNumber: updateMessage.Contact.PhoneNumber,
+				FirstName:   updateMessage.Contact.FirstName,
+				LastName:    updateMessage.Contact.LastName,
+				UserID:      updateMessage.Contact.UserID,
+			}
+		}
+		if updateMessage.Location != nil {
+			message.Location = model.Location{
+				Longitude: updateMessage.Location.Longitude,
+				Latitude:  updateMessage.Location.Latitude,
+			}
+		}
 		switch {
+		case updateMessage.Contact != nil:
+			message.Type = model.MessageContact
+			message.Data = fmt.Sprintf("%s - %s %s",
+				updateMessage.Contact.PhoneNumber,
+				updateMessage.Contact.FirstName,
+				updateMessage.Contact.LastName)
+			messages <- message
+		case updateMessage.Location != nil:
+			message.Type = model.MessageLocation
+			message.Data = fmt.Sprintf("%v|%v",
+				updateMessage.Location.Latitude,
+				updateMessage.Location.Longitude)
+			messages <- message
 		case updateMessage.Document != nil:
 			message.Type = model.MessageDocument
 			message.Data, err = b.tbot.GetFileDirectURL(updateMessage.Document.FileID)
@@ -125,6 +152,12 @@ func chattableFromMessage(m *model.Message) tgbotapi.Chattable {
 			msg.ParseMode = tgbotapi.ModeMarkdown
 		}
 		return msg
+	case model.MessageContact:
+		msg := tgbotapi.NewContact(m.ChatID, m.Contact.PhoneNumber, m.From.FirstName)
+		return msg
+	case model.MessageLocation:
+		msg := tgbotapi.NewLocation(m.ChatID, m.Location.Latitude, m.Location.Longitude)
+		return msg
 	case model.MessageSticker:
 		return tgbotapi.NewStickerUpload(m.ChatID, m.Data)
 	case model.MessagePhoto:
@@ -143,6 +176,30 @@ func chattableFromMessage(m *model.Message) tgbotapi.Chattable {
 		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
 		btns := buttonsFromStrings(m.Buttons)
 		keyboard := tgbotapi.NewReplyKeyboard(btns...)
+		keyboard.OneTimeKeyboard = m.OneTimeKeyboard
+		msg.ReplyMarkup = keyboard
+		if m.Markdown {
+			msg.ParseMode = tgbotapi.ModeMarkdown
+		}
+		return msg
+	case model.MessageContactButton:
+		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
+		btn := [][]tgbotapi.KeyboardButton{
+			[]tgbotapi.KeyboardButton{
+				tgbotapi.NewKeyboardButtonContact(m.ContactButton)}}
+		keyboard := tgbotapi.NewReplyKeyboard(btn...)
+		keyboard.OneTimeKeyboard = m.OneTimeKeyboard
+		msg.ReplyMarkup = keyboard
+		if m.Markdown {
+			msg.ParseMode = tgbotapi.ModeMarkdown
+		}
+		return msg
+	case model.MessageLocationButton:
+		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
+		btn := [][]tgbotapi.KeyboardButton{
+			[]tgbotapi.KeyboardButton{
+				tgbotapi.NewKeyboardButtonLocation(m.LocationButton)}}
+		keyboard := tgbotapi.NewReplyKeyboard(btn...)
 		keyboard.OneTimeKeyboard = m.OneTimeKeyboard
 		msg.ReplyMarkup = keyboard
 		if m.Markdown {

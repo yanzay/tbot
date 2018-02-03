@@ -4,11 +4,15 @@ type MessageType int
 
 const (
 	MessageText MessageType = iota
+	MessageContact
+	MessageLocation
 	MessageDocument
 	MessageSticker
 	MessagePhoto
 	MessageAudio
 	MessageKeyboard
+	MessageContactButton
+	MessageLocationButton
 )
 
 const (
@@ -24,13 +28,33 @@ type Message struct {
 	Caption         string
 	Replies         chan *Message
 	From            User
+	Contact         Contact
+	Location        Location
 	ChatID          int64
 	ChatType        string
 	DisablePreview  bool
 	Markdown        bool
 	Buttons         [][]string
+	ContactButton   string
+	LocationButton  string
 	OneTimeKeyboard bool
 	ForwardDate     int
+}
+
+// Contact contains information about a contact.
+//
+// Note that LastName and UserID may be empty.
+type Contact struct {
+	PhoneNumber string `json:"phone_number"`
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"` // optional
+	UserID      int    `json:"user_id"`   // optional
+}
+
+// Location contains information about a place.
+type Location struct {
+	Longitude float64 `json:"longitude"`
+	Latitude  float64 `json:"latitude"`
 }
 
 // User is a user on Telegram.
