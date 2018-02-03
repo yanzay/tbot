@@ -139,10 +139,10 @@ func (m *Message) RequestContactButton(text string, button string, options ...Ke
 // RequestLocationButton sends custom reply location keyboard to the user.
 func (m *Message) RequestLocationButton(text string, button string, options ...KeyboardOption) {
 	msg := &model.Message{
-		Type:          model.MessageLocationButton,
-		Data:          text,
-		ContactButton: button,
-		ChatID:        m.ChatID,
+		Type:           model.MessageLocationButton,
+		Data:           text,
+		LocationButton: button,
+		ChatID:         m.ChatID,
 	}
 	for _, option := range options {
 		option(msg)
