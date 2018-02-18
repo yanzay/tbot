@@ -129,6 +129,11 @@ func (s *Server) SendMessage(m *model.Message) error {
 	return s.bot.Send(m)
 }
 
+// SendRaw sends direct request to telegram api
+func (s *Server) SendRaw(endpoint string, params map[string]string) error {
+	return s.bot.SendRaw(endpoint, params)
+}
+
 func (s *Server) Reset(chatID int64) {
 	s.mux.Reset(chatID)
 }
