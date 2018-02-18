@@ -122,6 +122,19 @@ func (m *Message) ReplyKeyboard(text string, buttons [][]string, options ...Keyb
 	m.sendReply(msg)
 }
 
+// ReplyLocation sends location reply to the user.
+func (m *Message) ReplyLocation(longitude, latitude float64) {
+	msg := &model.Message{
+		Type: model.MessageLocation,
+		Location: model.Location{
+			Longitude: longitude,
+			Latitude:  latitude,
+		},
+		ChatID: m.ChatID,
+	}
+	m.sendReply(msg)
+}
+
 // RequestContactButton sends custom reply contact button to the user.
 func (m *Message) RequestContactButton(text string, button string, options ...KeyboardOption) {
 	msg := &model.Message{
@@ -143,6 +156,33 @@ func (m *Message) RequestLocationButton(text string, button string, options ...K
 		Data:           text,
 		LocationButton: button,
 		ChatID:         m.ChatID,
+	}
+	for _, option := range options {
+		option(msg)
+	}
+	m.sendReply(msg)
+}
+
+// InlineKeyboardButtonsOption is a functional option for inline keyboard buttons
+type InlineKeyboardButtonsOption func(*model.Message)
+
+// WithDataInlineButtons option send inline keyboard buttons with data for catch a callback.
+var WithDataInlineButtons = func(msg *model.Message) {
+	msg.WithDataInlineButtons = true
+}
+
+// WithURLInlineButtons option send inline keyboard buttons as url.
+var WithURLInlineButtons = func(msg *model.Message) {
+	msg.WithURLInlineButtons = true
+}
+
+// ReplyInlineKeyboard sends custom inline reply keyboard waiting for data callback to the user.
+func (m *Message) ReplyInlineKeyboard(text string, inlineButtons []map[string]string, options ...InlineKeyboardButtonsOption) {
+	msg := &model.Message{
+		Type:          model.MessageInlineKeyboard,
+		Data:          text,
+		InlineButtons: inlineButtons,
+		ChatID:        m.ChatID,
 	}
 	for _, option := range options {
 		option(msg)

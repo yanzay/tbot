@@ -13,6 +13,7 @@ import (
 
 type BotAdapter interface {
 	Send(*model.Message) error
+	SendRaw(string, map[string]string) error
 	GetUpdatesChan(string, string) (<-chan *model.Message, error)
 	GetUserName() string
 	GetFirstName() string
@@ -37,6 +38,15 @@ func (b *Bot) Send(m *model.Message) error {
 		return err
 	}
 	return fmt.Errorf("Trying to send nil chattable. Message: %v", m)
+}
+
+func (b *Bot) SendRaw(endpoint string, params map[string]string) error {
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+	_, err := b.tbot.MakeRequest(endpoint, values)
+	return err
 }
 
 func (b *Bot) GetUpdatesChan(webhookURL string, listenAddr string) (<-chan *model.Message, error) {
@@ -80,6 +90,9 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *mode
 		if update.ChannelPost != nil {
 			updateMessage = update.ChannelPost
 		}
+		if update.CallbackQuery != nil && update.CallbackQuery.Message != nil {
+			updateMessage = update.CallbackQuery.Message
+		}
 		if updateMessage == nil {
 			continue
 		}
@@ -113,7 +126,31 @@ func (b *Bot) adaptUpdates(updates <-chan tgbotapi.Update, messages chan<- *mode
 				Latitude:  updateMessage.Location.Latitude,
 			}
 		}
+		if update.CallbackQuery != nil {
+			message.CallbackQuery = model.CallbackQuery{
+				ID:              update.CallbackQuery.ID,
+				InlineMessageID: update.CallbackQuery.InlineMessageID,
+				ChatInstance:    update.CallbackQuery.ChatInstance,
+				Data:            update.CallbackQuery.Data,
+				GameShortName:   update.CallbackQuery.GameShortName,
+			}
+			if update.CallbackQuery.From != nil {
+				message.CallbackQuery.From = model.User{
+					ID:           update.CallbackQuery.From.ID,
+					FirstName:    update.CallbackQuery.From.FirstName,
+					LastName:     update.CallbackQuery.From.LastName,
+					UserName:     update.CallbackQuery.From.UserName,
+					LanguageCode: update.CallbackQuery.From.LanguageCode,
+				}
+			}
+		}
 		switch {
+		case update.CallbackQuery != nil:
+			message.Type = model.MessageInlineKeyboard
+			if updateMessage.Text != "" {
+				message.Data = updateMessage.Text
+			}
+			messages <- message
 		case updateMessage.Contact != nil:
 			message.Type = model.MessageContact
 			message.Data = fmt.Sprintf("%s - %s %s",
@@ -206,8 +243,46 @@ func chattableFromMessage(m *model.Message) tgbotapi.Chattable {
 			msg.ParseMode = tgbotapi.ModeMarkdown
 		}
 		return msg
+	case model.MessageInlineKeyboard:
+		msg := tgbotapi.NewMessage(m.ChatID, m.Data)
+		var btns [][]tgbotapi.InlineKeyboardButton
+		if m.WithDataInlineButtons {
+			btns = inlineDataButtonsFromStrings(m.InlineButtons)
+		} else if m.WithURLInlineButtons {
+			btns = inlineURLButtonsFromStrings(m.InlineButtons)
+		}
+		keyboard := tgbotapi.NewInlineKeyboardMarkup(btns...)
+		msg.ReplyMarkup = keyboard
+		if m.Markdown {
+			msg.ParseMode = tgbotapi.ModeMarkdown
+		}
+		return msg
 	}
 	return nil
+}
+
+func inlineDataButtonsFromStrings(strs []map[string]string) [][]tgbotapi.InlineKeyboardButton {
+	btns := make([][]tgbotapi.InlineKeyboardButton, len(strs))
+	for i, buttonRow := range strs {
+		btnsRow := []tgbotapi.InlineKeyboardButton{}
+		for buttonText, buttonData := range buttonRow {
+			btnsRow = append(btnsRow, tgbotapi.NewInlineKeyboardButtonData(buttonText, buttonData))
+		}
+		btns[i] = tgbotapi.NewInlineKeyboardRow(btnsRow...)
+	}
+	return btns
+}
+
+func inlineURLButtonsFromStrings(strs []map[string]string) [][]tgbotapi.InlineKeyboardButton {
+	btns := make([][]tgbotapi.InlineKeyboardButton, len(strs))
+	for i, buttonRow := range strs {
+		btnsRow := []tgbotapi.InlineKeyboardButton{}
+		for buttonText, buttonURL := range buttonRow {
+			btnsRow = append(btnsRow, tgbotapi.NewInlineKeyboardButtonURL(buttonText, buttonURL))
+		}
+		btns[i] = tgbotapi.NewInlineKeyboardRow(btnsRow...)
+	}
+	return btns
 }
 
 func buttonsFromStrings(strs [][]string) [][]tgbotapi.KeyboardButton {

@@ -11,6 +11,7 @@ const (
 	MessagePhoto
 	MessageAudio
 	MessageKeyboard
+	MessageInlineKeyboard
 	MessageContactButton
 	MessageLocationButton
 )
@@ -23,22 +24,26 @@ const (
 )
 
 type Message struct {
-	Type            MessageType
-	Data            string
-	Caption         string
-	Replies         chan *Message
-	From            User
-	Contact         Contact
-	Location        Location
-	ChatID          int64
-	ChatType        string
-	DisablePreview  bool
-	Markdown        bool
-	Buttons         [][]string
-	ContactButton   string
-	LocationButton  string
-	OneTimeKeyboard bool
-	ForwardDate     int
+	Type                  MessageType
+	Data                  string
+	CallbackQuery         CallbackQuery
+	Caption               string
+	Replies               chan *Message
+	From                  User
+	Contact               Contact
+	Location              Location
+	ChatID                int64
+	ChatType              string
+	DisablePreview        bool
+	Markdown              bool
+	InlineButtons         []map[string]string
+	WithURLInlineButtons  bool
+	WithDataInlineButtons bool
+	Buttons               [][]string
+	ContactButton         string
+	LocationButton        string
+	OneTimeKeyboard       bool
+	ForwardDate           int
 }
 
 // Contact contains information about a contact.
@@ -64,4 +69,15 @@ type User struct {
 	LastName     string `json:"last_name"`     // optional
 	UserName     string `json:"username"`      // optional
 	LanguageCode string `json:"language_code"` // optional
+}
+
+// CallbackQuery is data sent when a keyboard button with callback data
+// is clicked.
+type CallbackQuery struct {
+	ID              string `json:"id"`
+	From            User   `json:"from"`
+	InlineMessageID string `json:"inline_message_id"` // optional
+	ChatInstance    string `json:"chat_instance"`
+	Data            string `json:"data"`            // optional
+	GameShortName   string `json:"game_short_name"` // optional
 }
