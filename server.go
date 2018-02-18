@@ -123,6 +123,10 @@ func (s *Server) Send(chatID int64, text string) error {
 	return s.bot.Send(&model.Message{Type: model.MessageText, ChatID: chatID, Data: text})
 }
 
+func (s *Server) SendKeyboard(chatID int64, text string, buttons [][]string) error {
+	return s.bot.Send(&model.Message{Type: model.MessageKeyboard, ChatID: chatID, Data: text, Buttons: buttons})
+}
+
 func (s *Server) Reset(chatID int64) {
 	s.mux.Reset(chatID)
 }
