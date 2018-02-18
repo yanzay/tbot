@@ -32,6 +32,10 @@ func (*mockBot) Send(m *model.Message) error {
 	return nil
 }
 
+func (*mockBot) SendRaw(endpoint string, params map[string]string) error {
+	return nil
+}
+
 func (*mockBot) GetUpdatesChan(webhookURL string, listenAddr string) (<-chan *model.Message, error) {
 	return inputMessages, nil
 }
