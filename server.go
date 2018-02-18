@@ -123,10 +123,9 @@ func (s *Server) Send(chatID int64, text string) error {
 	return s.bot.Send(&model.Message{Type: model.MessageText, ChatID: chatID, Data: text})
 }
 
-// SendMessage method sends a Message object to the user.
-// MessageType and ChatID are required for sending a proper message to a chat.
-func (s *Server) SendMessage(m *model.Message) error {
-	return s.bot.Send(m)
+// SendRaw sends direct request to telegram api
+func (s *Server) SendRaw(endpoint string, params map[string]string) error {
+	return s.bot.SendRaw(endpoint, params)
 }
 
 func (s *Server) Reset(chatID int64) {
