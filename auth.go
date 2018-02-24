@@ -2,7 +2,6 @@ package tbot
 
 import (
 	"errors"
-	"fmt"
 )
 
 const (
@@ -31,7 +30,6 @@ func NewAuthWithUserName(whitelist []string) Middleware {
 	return func(f HandlerFunction) HandlerFunction {
 		return func(m *Message) {
 			for _, name := range whitelist {
-				fmt.Println(m.From.ID)
 				if m.From.UserName == name {
 					f(m)
 					return
