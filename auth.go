@@ -16,21 +16,21 @@ const (
 func NewAuth(whitelist interface{}) Middleware {
 	switch whitelist.(type) {
 	case []string:
-		return NewAuthWithUserName(whitelist.([]string))
+		return authWithUserName(whitelist.([]string))
 	case []int:
-		return NewAuthWithUserId(whitelist.([]int))
+		return authWithUserId(whitelist.([]int))
 	case []int64:
-		return NewAuthWithChatId(whitelist.([]int64))
+		return authWithChatId(whitelist.([]int64))
 	default:
 		panic(errors.New("Unknown Whitelist Format"))
 	}
 }
 
-func NewAuthWithUserName(whitelist []string) Middleware {
+func authWithUserName(whitelist []string) Middleware {
 	return func(f HandlerFunction) HandlerFunction {
 		return func(m *Message) {
-			for _, name := range whitelist {
-				if m.From.UserName == name {
+			for _, userName := range whitelist {
+				if m.From.UserName == userName {
 					f(m)
 					return
 				}
@@ -40,7 +40,7 @@ func NewAuthWithUserName(whitelist []string) Middleware {
 	}
 }
 
-func NewAuthWithUserId(whitelist []int) Middleware {
+func authWithUserId(whitelist []int) Middleware {
 	return func(f HandlerFunction) HandlerFunction {
 		return func(m *Message) {
 			for _, userId := range whitelist {
@@ -54,7 +54,7 @@ func NewAuthWithUserId(whitelist []int) Middleware {
 	}
 }
 
-func NewAuthWithChatId(whitelist []int64) Middleware {
+func authWithChatId(whitelist []int64) Middleware {
 	return func(f HandlerFunction) HandlerFunction {
 		return func(m *Message) {
 			for _, chatId := range whitelist {
