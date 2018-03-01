@@ -63,8 +63,9 @@ func TestReplyDocument(t *testing.T) {
 func mockMessage() *Message {
 	m := &Message{
 		Message: &model.Message{
-			ChatID: 13666,
+			ChatID: -271651159,
 			From: model.User{
+				ID:       521844285,
 				UserName: "me",
 			},
 			Replies: make(chan *model.Message),
