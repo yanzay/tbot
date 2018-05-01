@@ -205,6 +205,7 @@ func chattableFromMessage(m *model.Message) tgbotapi.Chattable {
 	case model.MessageAudio:
 		msg := tgbotapi.NewAudioUpload(m.ChatID, m.Data)
 		msg = tgbotapi.AudioConfig{BaseFile: fileMessage(m, msg.BaseFile)}
+		return msg
 	case model.MessageDocument:
 		msg := tgbotapi.NewDocumentUpload(m.ChatID, nil)
 		msg = tgbotapi.DocumentConfig{BaseFile: fileMessage(m, msg.BaseFile)}
