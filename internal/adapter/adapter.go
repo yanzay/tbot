@@ -202,6 +202,11 @@ func chattableFromMessage(m *model.Message) tgbotapi.Chattable {
 		photo = tgbotapi.PhotoConfig{BaseFile: fileMessage(m, photo.BaseFile)}
 		photo.Caption = m.Caption
 		return photo
+	case model.MessageVideo:
+		video := tgbotapi.NewVideoUpload(m.ChatID, m.Data)
+		video = tgbotapi.VideoConfig{BaseFile: fileMessage(m, video.BaseFile)}
+		video.Caption = m.Caption
+		return video
 	case model.MessageAudio:
 		msg := tgbotapi.NewAudioUpload(m.ChatID, m.Data)
 		msg = tgbotapi.AudioConfig{BaseFile: fileMessage(m, msg.BaseFile)}

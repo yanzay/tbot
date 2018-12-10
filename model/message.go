@@ -9,6 +9,7 @@ const (
 	MessageDocument
 	MessageSticker
 	MessagePhoto
+	MessageVideo
 	MessageAudio
 	MessageKeyboard
 	MessageInlineKeyboard

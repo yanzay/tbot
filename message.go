@@ -69,8 +69,17 @@ func (m *Message) ReplySticker(filepath string) {
 
 // ReplyPhoto sends photo to the chat. Has optional caption.
 func (m *Message) ReplyPhoto(filepath string, caption ...string) {
+	m.replyMedia(model.MessagePhoto, filepath, caption...)
+}
+
+// ReplyVideo sends video to the chat. Has optional caption.
+func (m *Message) ReplyVideo(filepath string, caption ...string) {
+	m.replyMedia(model.MessageVideo, filepath, caption...)
+}
+
+func (m *Message) replyMedia(mType model.MessageType, filepath string, caption ...string) {
 	msg := &model.Message{
-		Type:   model.MessagePhoto,
+		Type:   mType,
 		Data:   filepath,
 		ChatID: m.ChatID,
 	}
