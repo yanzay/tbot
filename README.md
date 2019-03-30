@@ -52,3 +52,7 @@ func main() {
 	bot.Start()
 }
 ```
+
+## Examples
+
+Please take a look inside [examples](https://github.com/yanzay/tbot/tree/master/examples) folder.
