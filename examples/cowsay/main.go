@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"unicode/utf8"
@@ -11,20 +10,15 @@ import (
 )
 
 func main() {
-	bot, err := tbot.NewServer(os.Getenv("TELEGRAM_TOKEN"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	bot.HandleFunc("/cowsay {text}", CowHandler)
-	err = bot.ListenAndServe()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func CowHandler(m *tbot.Message) {
-	reply := fmt.Sprintf("```\n%s\n```", cowsay(m.Vars["text"]))
-	m.Reply(reply, tbot.WithMarkdown)
+	token := os.Getenv("TELEGRAM_TOKEN")
+	bot := tbot.New(token)
+	c := bot.Client()
+	bot.HandleMessage("cowsay .+", func(m *tbot.Message) {
+		text := strings.TrimPrefix(m.Text, "cowsay ")
+		cow := fmt.Sprintf("```\n%s\n```", cowsay(text))
+		c.SendMessage(m.Chat.ID, cow, tbot.OptParseModeMarkdown)
+	})
+	bot.Start()
 }
 
 func cowsay(text string) string {
