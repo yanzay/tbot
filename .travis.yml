@@ -6,11 +6,11 @@ go:
   - 1.6
   - 1.7
   - 1.8
+  - 1.9
+  - 1.10
+  - 1.11
+  - 1.12
   - tip
-
-install:
-  - go get github.com/yanzay/log
-  - go get github.com/go-telegram-bot-api/telegram-bot-api
 
 script:
   - go test -v -race -coverprofile=coverage.txt -covermode=atomic
