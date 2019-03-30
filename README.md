@@ -4,6 +4,16 @@
 
 > Note: this is tbot v2, you can find v1 [here](https://github.com/yanzay/tbot/tree/v1.0).
 
+## Features
+
+- Full Telegram Bot API support
+- **Zero** dependency
+- Type-safe API client with functional options
+- Capture messages by regexp
+- Can be used with go modules
+- Support for external logger
+- MIT licensed
+
 ## Installation
 
 ```bash
