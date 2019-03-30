@@ -1,6 +1,4 @@
-# tbot
-
-**tbot** a Telegram bot server.
+# tbot - Telegram Bot Server [![Go Report Card](https://goreportcard.com/badge/github.com/yanzay/tbot)](https://goreportcard.com/report/github.com/yanzay/tbot)
 
 > Note: this is tbot v2, you can find v1 [here](https://github.com/yanzay/tbot/tree/v1.0).
 
