@@ -101,6 +101,9 @@ func WithLogger(logger Logger) ServerOption {
 
 // Start listening for updates
 func (s *Server) Start() error {
+	if len(s.token) == 0 {
+		return fmt.Errorf("token is empty")
+	}
 	updates, err := s.getUpdates()
 	if err != nil {
 		return err
