@@ -36,7 +36,15 @@ type Server struct {
 	callbackHandler        func(*CallbackQuery)
 	shippingHandler        func(*ShippingQuery)
 	preCheckoutHandler     func(*PreCheckoutQuery)
+
+	middlewares []Middleware
 }
+
+// UpdateHandler is a function for middlewares
+type UpdateHandler func(*Update)
+
+// Middleware is a middleware for updates
+type Middleware func(UpdateHandler) UpdateHandler
 
 // ServerOption type for additional Server options
 type ServerOption func(*Server)
@@ -99,6 +107,11 @@ func WithLogger(logger Logger) ServerOption {
 	}
 }
 
+// Use adds middleware to server
+func (s *Server) Use(m Middleware) {
+	s.middlewares = append(s.middlewares, m)
+}
+
 // Start listening for updates
 func (s *Server) Start() error {
 	if len(s.token) == 0 {
@@ -111,26 +124,33 @@ func (s *Server) Start() error {
 	for {
 		select {
 		case update := <-updates:
-			switch {
-			case update.Message != nil:
-				go s.handleMessage(update.Message)
-			case update.EditedMessage != nil:
-				go s.editMessageHandler(update.EditedMessage)
-			case update.ChannelPost != nil:
-				go s.channelPostHandler(update.ChannelPost)
-			case update.EditedChannelPost != nil:
-				go s.editChannelPostHandler(update.EditedChannelPost)
-			case update.InlineQuery != nil:
-				go s.inlineQueryHandler(update.InlineQuery)
-			case update.ChosenInlineResult != nil:
-				go s.inlineResultHandler(update.ChosenInlineResult)
-			case update.CallbackQuery != nil:
-				go s.callbackHandler(update.CallbackQuery)
-			case update.ShippingQuery != nil:
-				go s.shippingHandler(update.ShippingQuery)
-			case update.PreCheckoutQuery != nil:
-				go s.preCheckoutHandler(update.PreCheckoutQuery)
+			handleUpdate := func(update *Update) {
+				switch {
+				case update.Message != nil:
+					s.handleMessage(update.Message)
+				case update.EditedMessage != nil:
+					s.editMessageHandler(update.EditedMessage)
+				case update.ChannelPost != nil:
+					s.channelPostHandler(update.ChannelPost)
+				case update.EditedChannelPost != nil:
+					s.editChannelPostHandler(update.EditedChannelPost)
+				case update.InlineQuery != nil:
+					s.inlineQueryHandler(update.InlineQuery)
+				case update.ChosenInlineResult != nil:
+					s.inlineResultHandler(update.ChosenInlineResult)
+				case update.CallbackQuery != nil:
+					s.callbackHandler(update.CallbackQuery)
+				case update.ShippingQuery != nil:
+					s.shippingHandler(update.ShippingQuery)
+				case update.PreCheckoutQuery != nil:
+					s.preCheckoutHandler(update.PreCheckoutQuery)
+				}
 			}
+			var f = handleUpdate
+			for i := len(s.middlewares) - 1; i >= 0; i-- {
+				f = s.middlewares[i](f)
+			}
+			go f(update)
 		case <-s.stop:
 			return nil
 		}
