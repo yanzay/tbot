@@ -113,6 +113,11 @@ func (c *Client) setWebhook(webhookURL string) error {
 	return c.doRequest("setWebhook", req, &set)
 }
 
+func (c *Client) deleteWebhook() error {
+	var ok bool
+	return c.doRequest("deleteWebhook", url.Values{}, &ok)
+}
+
 // SendMessage options
 var (
 	OptDisableWebPagePreview = func(r url.Values) {

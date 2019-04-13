@@ -151,6 +151,7 @@ func (s *Server) getUpdates() (chan *Update, error) {
 	if s.webhookURL != "" && s.listenAddr != "" {
 		return s.listenUpdates()
 	}
+	s.client.deleteWebhook()
 	return s.longPoolUpdates()
 }
 
