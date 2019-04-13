@@ -8,6 +8,7 @@
 - **Zero** dependency
 - Type-safe API client with functional options
 - Capture messages by regexp
+- Middlewares support
 - Can be used with go modules
 - Support for external logger
 - MIT licensed
