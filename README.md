@@ -33,6 +33,7 @@ Simple usage example:
 package main
 
 import (
+	"log"
 	"os"
 	"time"
 
@@ -47,7 +48,10 @@ func main() {
 		time.Sleep(1 * time.Second)
 		c.SendMessage(m.Chat.ID, "hello!")
 	})
-	bot.Start()
+	err := bot.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 ```
 
