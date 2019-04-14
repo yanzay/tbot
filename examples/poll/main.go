@@ -12,7 +12,7 @@ var client *tbot.Client
 func main() {
 	bot := tbot.New(os.Getenv("TELEGRAM_TOKEN"))
 	client = bot.Client()
-	// listen to any message and send poll
+	// listen poll message and send poll
 	bot.HandleMessage("poll", sendPoll)
 	// handle poll updates, just print on the screen
 	bot.HandlePollUpdate(func(p *tbot.Poll) {
