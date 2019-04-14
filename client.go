@@ -2334,3 +2334,44 @@ func (c *Client) GetInlineGameHighScores(inlineMessageID string, userID int) ([]
 	err := c.doRequest("getGameHighScores", req, &scores)
 	return scores, err
 }
+
+/*
+SendPoll sends native telegram poll. Available Options:
+	- OptDisableNotification
+	- OptReplyToMessageID(id int)
+	- OptInlineKeyboardMarkup(markup *InlineKeyboardMarkup)
+	- OptReplyKeyboardMarkup(markup *ReplyKeyboardMarkup)
+	- OptReplyKeyboardRemove
+	- OptReplyKeyboardRemoveSelective
+	- OptForceReply
+	- OptForceReplySelective
+*/
+func (c *Client) SendPoll(chatID string, question string, options []string, opts ...sendOption) (*Message, error) {
+	req := url.Values{}
+	req.Set("chat_id", chatID)
+	req.Set("question", question)
+	marshalledOptions, _ := json.Marshal(options)
+	req.Set("options", string(marshalledOptions))
+	for _, opt := range opts {
+		opt(req)
+	}
+	msg := &Message{}
+	err := c.doRequest("sendPoll", req, msg)
+	return msg, err
+}
+
+/*
+StopPoll stops poll. Available Options:
+	- OptInlineKeyboardMarkup(markup *InlineKeyboardMarkup)
+*/
+func (c *Client) StopPoll(chatID string, messageID string, opts ...sendOption) (*Poll, error) {
+	req := url.Values{}
+	req.Set("chat_id", chatID)
+	req.Set("message_id", messageID)
+	for _, opt := range opts {
+		opt(req)
+	}
+	poll := &Poll{}
+	err := c.doRequest("stopPoll", req, poll)
+	return poll, err
+}

@@ -275,6 +275,7 @@ type Message struct {
 	Contact               *Contact           `json:"contact"`
 	Location              *Location          `json:"location"`
 	Venue                 *Venue             `json:"venue"`
+	Poll                  *Poll              `json:"poll"`
 	NewChatMembers        []*User            `json:"new_chat_members"`
 	LeftChatMember        *User              `json:"left_chat_member"`
 	NewChatTitle          string             `json:"new_chat_title"`
@@ -356,6 +357,7 @@ type Update struct {
 	CallbackQuery      *CallbackQuery      `json:"callback_query"`
 	ShippingQuery      *ShippingQuery      `json:"shipping_query"`
 	PreCheckoutQuery   *PreCheckoutQuery   `json:"pre_checkout_query"`
+	Poll               *Poll               `json:"poll"`
 }
 
 // PassportData contains information about Telegram Passport data shared with the bot by the user
@@ -388,4 +390,18 @@ type EncryptedCredentials struct {
 	Data   string `json:"data"`
 	Hash   string `json:"hash"`
 	Secret string `json:"secret"`
+}
+
+// Poll represents native telegram poll
+type Poll struct {
+	ID       string       `json:"id"`
+	Question string       `json:"question"`
+	Options  []PollOption `json:"options"`
+	IsClosed bool         `json:"is_closed"`
+}
+
+// PollOption is an option for Poll
+type PollOption struct {
+	Text       string `json:"text"`
+	VoterCount int    `json:"voter_count"`
 }

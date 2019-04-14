@@ -36,6 +36,7 @@ type Server struct {
 	callbackHandler        func(*CallbackQuery)
 	shippingHandler        func(*ShippingQuery)
 	preCheckoutHandler     func(*PreCheckoutQuery)
+	pollHandler            func(*Poll)
 
 	middlewares []Middleware
 }
@@ -75,6 +76,7 @@ func New(token string, options ...ServerOption) *Server {
 		callbackHandler:        func(*CallbackQuery) {},
 		shippingHandler:        func(*ShippingQuery) {},
 		preCheckoutHandler:     func(*PreCheckoutQuery) {},
+		pollHandler:            func(*Poll) {},
 	}
 	for _, opt := range options {
 		opt(s)
@@ -144,6 +146,8 @@ func (s *Server) Start() error {
 					s.shippingHandler(update.ShippingQuery)
 				case update.PreCheckoutQuery != nil:
 					s.preCheckoutHandler(update.PreCheckoutQuery)
+				case update.Poll != nil:
+					s.pollHandler(update.Poll)
 				}
 			}
 			var f = handleUpdate
@@ -295,6 +299,11 @@ func (s *Server) HandleShipping(handler func(*ShippingQuery)) {
 // HandlePreCheckout set handler for pre-checkout queries
 func (s *Server) HandlePreCheckout(handler func(*PreCheckoutQuery)) {
 	s.preCheckoutHandler = handler
+}
+
+// HandlePollUpdate set handler for native poll updates
+func (s *Server) HandlePollUpdate(handler func(*Poll)) {
+	s.pollHandler = handler
 }
 
 func (s *Server) handleMessage(msg *Message) {
