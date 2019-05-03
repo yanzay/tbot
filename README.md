@@ -16,7 +16,7 @@
 ## Installation
 
 ```bash
-go get github.com/yanzay/tbot
+go get github.com/yanzay/tbot/v2
 ```
 
 Go modules supported.
@@ -38,7 +38,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/yanzay/tbot"
+	"github.com/yanzay/tbot/v2"
 )
 
 func main() {

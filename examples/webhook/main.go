@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/yanzay/tbot"
+	"github.com/yanzay/tbot/v2"
 )
 
 func main() {

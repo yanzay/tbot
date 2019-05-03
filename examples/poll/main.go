@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/yanzay/tbot"
+	"github.com/yanzay/tbot/v2"
 )
 
 var client *tbot.Client

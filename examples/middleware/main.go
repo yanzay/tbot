@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/yanzay/tbot"
+	"github.com/yanzay/tbot/v2"
 )
 
 func stat(h tbot.UpdateHandler) tbot.UpdateHandler {
