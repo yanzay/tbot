@@ -77,6 +77,8 @@ func New(token string, options ...ServerOption) *Server {
 		shippingHandler:        func(*ShippingQuery) {},
 		preCheckoutHandler:     func(*PreCheckoutQuery) {},
 		pollHandler:            func(*Poll) {},
+
+		stop: make(chan struct{}, 0),
 	}
 	for _, opt := range options {
 		opt(s)
