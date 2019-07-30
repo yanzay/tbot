@@ -84,11 +84,20 @@ type InlineKeyboardMarkup struct {
 
 // InlineKeyboardButton represents one button of an inline keyboard
 type InlineKeyboardButton struct {
-	Text                         string  `json:"text"`
-	URL                          string  `json:"url,omitempty"`
-	CallbackData                 string  `json:"callback_data,omitempty"`
-	SwitchInlineQuery            *string `json:"switch_inline_query,omitempty"`
-	SwitchInlineQueryCurrentChat *string `json:"switch_inline_query_current_chat,omitempty"`
+	Text                         string    `json:"text"`
+	URL                          string    `json:"url,omitempty"`
+	LoginURL                     *LoginURL `json:"login_url,omitempty"`
+	CallbackData                 string    `json:"callback_data,omitempty"`
+	SwitchInlineQuery            *string   `json:"switch_inline_query,omitempty"`
+	SwitchInlineQueryCurrentChat *string   `json:"switch_inline_query_current_chat,omitempty"`
+}
+
+// LoginURL is a property of InlineKeyboardButton for Seamless Login feature
+type LoginURL struct {
+	URL                string  `json:"url"`
+	ForwardText        *string `json:"forward_text,omitempty"`
+	BotUsername        *string `json:"bot_username,omitempty"`
+	RequestWriteAccess *string `json:"request_write_access,omitempty"`
 }
 
 // ReplyKeyboardMarkup represents a custom keyboard with reply options
