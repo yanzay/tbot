@@ -4,7 +4,7 @@
 
 ## Features
 
-- Full Telegram Bot API **4.2** support
+- Full Telegram Bot API **4.3** support
 - **Zero** dependency
 - Type-safe API client with functional options
 - Capture messages by regexp
