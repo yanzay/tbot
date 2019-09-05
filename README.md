@@ -1,4 +1,4 @@
-# tbot - Telegram Bot Server [![GoDoc](https://godoc.org/github.com/yanzay/tbot?status.svg)](https://godoc.org/github.com/yanzay/tbot) [![Go Report Card](https://goreportcard.com/badge/github.com/yanzay/tbot)](https://goreportcard.com/report/github.com/yanzay/tbot)
+# tbot - Telegram Bot Server [![GoDoc](https://godoc.org/github.com/yanzay/tbot?status.svg)](https://godoc.org/github.com/yanzay/tbot) [![Go Report Card](https://goreportcard.com/badge/github.com/yanzay/tbot)](https://goreportcard.com/report/github.com/yanzay/tbot) [![GitHub Actions](https://github.com/yanzay/tbot/workflows/Test/badge.svg)]
 
 > Note: this is tbot v2, you can find v1 [here](https://github.com/yanzay/tbot/tree/v1.0).
 
