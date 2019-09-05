@@ -1,9 +1,9 @@
-name: Go
+name: Test
 on: [push]
 jobs:
 
   test:
-    name: Test
+    name: Go
     runs-on: ubuntu-latest
     strategy:
       matrix:
