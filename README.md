@@ -15,11 +15,17 @@
 
 ## Installation
 
+With go modules:
+
 ```bash
 go get github.com/yanzay/tbot/v2
 ```
 
-Go modules supported.
+Without go modules:
+
+```bash
+go get github.com/yanzay/tbot
+```
 
 ## Support
 
