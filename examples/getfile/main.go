@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -24,7 +23,7 @@ func main() {
 				log.Println(err)
 				return
 			}
-			url := fmt.Sprintf("https://api.telegram.org/file/bot%s/%s", token, doc.FilePath)
+			url := client.FileURL(doc)
 			resp, err := http.Get(url)
 			if err != nil {
 				log.Println(err)
