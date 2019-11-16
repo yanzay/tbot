@@ -975,7 +975,7 @@ func (c *Client) GetUserProfilePhotos(userID int, opts ...sendOption) (*UserProf
 // File object represents a file ready to be downloaded
 type File struct {
 	FileID   string `json:"file_id"`
-	FileSize string `json:"file_size"`
+	FileSize int    `json:"file_size"`
 	FilePath string `json:"file_path"` // use https://api.telegram.org/file/bot<token>/<file_path> to download
 }
 
