@@ -31,6 +31,10 @@ go get github.com/yanzay/tbot
 
 Join [telegram group](https://t.me/tbotgo) to get support or just to say thank you.
 
+## Documentation
+
+See full documentation on [godoc](https://godoc.org/github.com/yanzay/tbot).
+
 ## Usage
 
 Simple usage example:
