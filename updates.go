@@ -33,27 +33,29 @@ type Chat struct {
 	Description                 string
 	InviteLink                  string
 	PinnedMessage               *Message
+	Permissions                 *ChatPermissions
 	StickerSetName              string
-	AllMembersAreAdministrators bool
+	AllMembersAreAdministrators bool // deprecated
 	CanSetStickerSet            bool
 }
 
 // UnmarshalJSON implements json.Unmarshaler
 func (c *Chat) UnmarshalJSON(data []byte) error {
 	s := &struct {
-		ID                          int        `json:"id"`
-		Type                        string     `json:"type"`
-		Title                       string     `json:"title"`
-		Username                    string     `json:"username"`
-		FirstName                   string     `json:"first_name"`
-		LastName                    string     `json:"last_name"`
-		Photo                       *ChatPhoto `json:"photo"`
-		Description                 string     `json:"description"`
-		InviteLink                  string     `json:"invite_link"`
-		PinnedMessage               *Message   `json:"pinned_message"`
-		StickerSetName              string     `json:"sticker_set_name"`
-		AllMembersAreAdministrators bool       `json:"all_members_are_administrators"`
-		CanSetStickerSet            bool       `json:"can_set_sticker_set"`
+		ID                          int              `json:"id"`
+		Type                        string           `json:"type"`
+		Title                       string           `json:"title"`
+		Username                    string           `json:"username"`
+		FirstName                   string           `json:"first_name"`
+		LastName                    string           `json:"last_name"`
+		Photo                       *ChatPhoto       `json:"photo"`
+		Description                 string           `json:"description"`
+		InviteLink                  string           `json:"invite_link"`
+		PinnedMessage               *Message         `json:"pinned_message"`
+		StickerSetName              string           `json:"sticker_set_name"`
+		Permissions                 *ChatPermissions `json:"permissions"`
+		AllMembersAreAdministrators bool             `json:"all_members_are_administrators"`
+		CanSetStickerSet            bool             `json:"can_set_sticker_set"`
 	}{}
 	err := json.Unmarshal(data, s)
 	if err != nil {
@@ -70,6 +72,7 @@ func (c *Chat) UnmarshalJSON(data []byte) error {
 		Description:                 s.Description,
 		InviteLink:                  s.InviteLink,
 		PinnedMessage:               s.PinnedMessage,
+		Permissions:                 s.Permissions,
 		StickerSetName:              s.StickerSetName,
 		AllMembersAreAdministrators: s.AllMembersAreAdministrators,
 		CanSetStickerSet:            s.CanSetStickerSet,
