@@ -141,6 +141,7 @@ type Sticker struct {
 	FileID       string        `json:"file_id"`
 	Width        int           `json:"width"`
 	Height       int           `json:"height"`
+	IsAnimated   bool          `json:"is_animated"`
 	Thumb        *PhotoSize    `json:"thumb"`
 	Emoji        string        `json:"emoji"`
 	MaskPosition *MaskPosition `json:"mask_position"`
