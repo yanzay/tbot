@@ -1201,6 +1201,7 @@ type ChatMember struct {
 	CanSendMediaMessages  bool   `json:"can_send_media_messages"`
 	CanSendOtherMessages  bool   `json:"can_send_other_messages"`
 	CanAddWebPagePreviews bool   `json:"can_add_web_page_previews"`
+	CanSendPolls          bool   `json:"can_send_polls"`
 }
 
 /*
