@@ -1025,26 +1025,16 @@ func (c *Client) UnbanChatMember(chatID string, userID int) error {
 	return c.doRequest("unbanChatMember", req, &unbanned)
 }
 
-// Restrictions for user in supergroup
-type Restrictions struct {
-	CanSendMessages       bool
-	CanSendMediaMessages  bool
-	CanSendOtherMessages  bool
-	CanAddWebPagePreviews bool
-}
-
 /*
 RestrictChatMember restrict a user in a supergroup. Available options:
 	- OptUntilDate(date time.Time)
 */
-func (c *Client) RestrictChatMember(chatID string, userID int, r *Restrictions, opts ...sendOption) error {
+func (c *Client) RestrictChatMember(chatID string, userID int, perm *ChatPermissions, opts ...sendOption) error {
 	req := url.Values{}
 	req.Set("chat_id", chatID)
 	req.Set("user_id", fmt.Sprint(userID))
-	req.Set("can_send_messages", fmt.Sprint(r.CanSendMessages))
-	req.Set("can_send_media_messages", fmt.Sprint(r.CanSendMediaMessages))
-	req.Set("can_send_other_messages", fmt.Sprint(r.CanSendOtherMessages))
-	req.Set("can_add_web_page_previews", fmt.Sprint(r.CanAddWebPagePreviews))
+	marshalledPermissions, _ := json.Marshal(perm)
+	req.Set("permissions", string(marshalledPermissions))
 	for _, opt := range opts {
 		opt(req)
 	}
