@@ -1461,6 +1461,7 @@ func (c *Client) SendSticker(chatID, fileID string, opts ...sendOption) (*Messag
 type StickerSet struct {
 	Name          string    `json:"name"`
 	Title         string    `json:"title"`
+	IsAnimated    bool      `json:"is_animated"`
 	ContainsMasks bool      `json:"contains_masks"`
 	Stickers      []Sticker `json:"stickers"`
 }
