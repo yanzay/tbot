@@ -33,7 +33,9 @@ Join [telegram group](https://t.me/tbotgo) to get support or just to say thank y
 
 ## Documentation
 
-See full documentation on [godoc](https://godoc.org/github.com/yanzay/tbot).
+Documentation: [https://yanzay.github.io/tbot-doc/](https://yanzay.github.io/tbot-doc/).
+
+Full specification: [godoc](https://godoc.org/github.com/yanzay/tbot).
 
 ## Usage
 
