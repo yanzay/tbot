@@ -43,7 +43,7 @@ var (
 		r.Set("parse_mode", "HTML")
 	}
 	OptParseModeMarkdown = func(r url.Values) {
-		r.Set("parse_mode", "Markdown")
+		r.Set("parse_mode", "MarkdownV2")
 	}
 	OptDisableNotification = func(r url.Values) {
 		r.Set("disable_notification", "true")
@@ -974,9 +974,10 @@ func (c *Client) GetUserProfilePhotos(userID int, opts ...sendOption) (*UserProf
 
 // File object represents a file ready to be downloaded
 type File struct {
-	FileID   string `json:"file_id"`
-	FileSize int    `json:"file_size"`
-	FilePath string `json:"file_path"` // use https://api.telegram.org/file/bot<token>/<file_path> to download
+	FileID       string `json:"file_id"`
+	FileUniqueID string `json:"file_unique_id"`
+	FileSize     int    `json:"file_size"`
+	FilePath     string `json:"file_path"` // use https://api.telegram.org/file/bot<token>/<file_path> to download
 }
 
 /*
@@ -1176,6 +1177,7 @@ func (c *Client) GetChat(chatID string) (*Chat, error) {
 type ChatMember struct {
 	User                  User   `json:"user"`
 	Status                string `json:"status"`
+	CustomTitle           string `json:"custom_title"`
 	UntilDate             int    `json:"until_date"`
 	CanBeEdited           bool   `json:"can_be_edited"`
 	CanChangeInfo         bool   `json:"can_change_info"`
@@ -2376,6 +2378,18 @@ func (c *Client) StopPoll(chatID string, messageID string, opts ...sendOption) (
 	poll := &Poll{}
 	err := c.doRequest("stopPoll", req, poll)
 	return poll, err
+}
+
+/*
+SetChatAdministratorCustomTitle set a custom title for an administrator in a supergroup promoted by the bot.
+*/
+func (c *Client) SetChatAdministratorCustomTitle(chatID string, userID string, customTitle string) error {
+	req := url.Values{}
+	req.Set("chat_id", chatID)
+	req.Set("user_id", userID)
+	req.Set("custom_title", customTitle)
+	var set bool
+	return c.doRequest("setChatAdministratorCustomTitle", req, &set)
 }
 
 // ChatPermissions describes actions that a non-administrator user is allowed to take in a chat.
