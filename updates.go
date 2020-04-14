@@ -7,12 +7,15 @@ import (
 
 // User is telegram user
 type User struct {
-	ID           int    `json:"id"`
-	IsBot        bool   `json:"is_bot"`
-	FirstName    string `json:"first_name"`
-	LastName     string `json:"last_name"`
-	Username     string `json:"username"`
-	LanguageCode string `json:"language_code"`
+	ID                      int    `json:"id"`
+	IsBot                   bool   `json:"is_bot"`
+	FirstName               string `json:"first_name"`
+	LastName                string `json:"last_name"`
+	Username                string `json:"username"`
+	LanguageCode            string `json:"language_code"`
+	CanJoinGroups           bool   `json:"can_join_groups"`
+	CanReadAllGroupMessages bool   `json:"can_read_all_group_messages"`
+	SupportsInlineQueries   bool   `json:"supports_inline_queries"`
 }
 
 // ChatPhoto represents a chat photo
@@ -88,11 +91,12 @@ func (c *Chat) UnmarshalJSON(data []byte) error {
 // MessageEntity represents one special entity in a text message.
 // For example, hashtags, usernames, URLs, etc.
 type MessageEntity struct {
-	Type   string `json:"type"`
-	Offset int    `json:"offset"`
-	Length int    `json:"length"`
-	URL    string `json:"url"`
-	User   *User  `json:"user"`
+	Type     string `json:"type"`
+	Offset   int    `json:"offset"`
+	Length   int    `json:"length"`
+	URL      string `json:"url"`
+	User     *User  `json:"user"`
+	Language string `json:"language"`
 }
 
 // Audio represents an audio file to be treated as music by the Telegram clients
@@ -377,6 +381,7 @@ type Update struct {
 	ShippingQuery      *ShippingQuery      `json:"shipping_query"`
 	PreCheckoutQuery   *PreCheckoutQuery   `json:"pre_checkout_query"`
 	Poll               *Poll               `json:"poll"`
+	PollAnswer         *PollAnswer         `json:"poll_answer"`
 }
 
 // PassportData contains information about Telegram Passport data shared with the bot by the user
@@ -414,14 +419,26 @@ type EncryptedCredentials struct {
 
 // Poll represents native telegram poll
 type Poll struct {
-	ID       string       `json:"id"`
-	Question string       `json:"question"`
-	Options  []PollOption `json:"options"`
-	IsClosed bool         `json:"is_closed"`
+	ID                    string       `json:"id"`
+	Question              string       `json:"question"`
+	Options               []PollOption `json:"options"`
+	TotalVoterCount       int          `json:"total_voter_count"`
+	IsClosed              bool         `json:"is_closed"`
+	IsAnonymous           bool         `json:"is_anonymous"`
+	Type                  string       `json:"type"`
+	AllowsMultipleAnswers bool         `json:"allows_multiple_answers"`
+	CorrectOptionID       int          `json:"correct_option_id"`
 }
 
 // PollOption is an option for Poll
 type PollOption struct {
 	Text       string `json:"text"`
 	VoterCount int    `json:"voter_count"`
+}
+
+// PollAnswer represents an answer of a user in a non-anonymous poll
+type PollAnswer struct {
+	PollID    int   `json:"poll_id"`
+	User      User  `json:"user"`
+	OptionIDs []int `json:"option_ids"`
 }
