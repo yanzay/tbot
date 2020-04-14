@@ -17,8 +17,10 @@ type User struct {
 
 // ChatPhoto represents a chat photo
 type ChatPhoto struct {
-	SmallFileID string `json:"small_file_id"`
-	BigFileID   string `json:"big_file_id"`
+	SmallFileID       string `json:"small_file_id"`
+	SmallFileUniqueID string `json:"small_file_unique_id"`
+	BigFileID         string `json:"big_file_id"`
+	BigFileUniqueID   string `json:"big_file_unique_id"`
 }
 
 // Chat represents a chat
@@ -36,6 +38,7 @@ type Chat struct {
 	Permissions                 *ChatPermissions
 	StickerSetName              string
 	AllMembersAreAdministrators bool // deprecated
+	SlowModeDelay               int
 	CanSetStickerSet            bool
 }
 
@@ -55,6 +58,7 @@ func (c *Chat) UnmarshalJSON(data []byte) error {
 		StickerSetName              string           `json:"sticker_set_name"`
 		Permissions                 *ChatPermissions `json:"permissions"`
 		AllMembersAreAdministrators bool             `json:"all_members_are_administrators"`
+		SlowModeDelay               int              `json:"slow_mode_delay"`
 		CanSetStickerSet            bool             `json:"can_set_sticker_set"`
 	}{}
 	err := json.Unmarshal(data, s)
@@ -75,6 +79,7 @@ func (c *Chat) UnmarshalJSON(data []byte) error {
 		Permissions:                 s.Permissions,
 		StickerSetName:              s.StickerSetName,
 		AllMembersAreAdministrators: s.AllMembersAreAdministrators,
+		SlowModeDelay:               s.SlowModeDelay,
 		CanSetStickerSet:            s.CanSetStickerSet,
 	}
 	return nil
@@ -92,30 +97,33 @@ type MessageEntity struct {
 
 // Audio represents an audio file to be treated as music by the Telegram clients
 type Audio struct {
-	FileID    string `json:"file_id"`
-	Duration  int    `json:"duration"`
-	Performer string `json:"performer"`
-	Title     string `json:"title"`
-	MIMEType  string `json:"mime_type"`
-	FileSize  int    `json:"file_size"`
+	FileID       string `json:"file_id"`
+	FileUniqueID string `json:"file_unique_id"`
+	Duration     int    `json:"duration"`
+	Performer    string `json:"performer"`
+	Title        string `json:"title"`
+	MIMEType     string `json:"mime_type"`
+	FileSize     int    `json:"file_size"`
 }
 
 // PhotoSize represents one size of a photo or a file/sticker thumbnail.
 type PhotoSize struct {
-	FileID   string `json:"file_id"`
-	Width    int    `json:"width"`
-	Height   int    `json:"height"`
-	FileSize int    `json:"file_size"`
+	FileID       string `json:"file_id"`
+	FileUniqueID string `json:"file_unique_id"`
+	Width        int    `json:"width"`
+	Height       int    `json:"height"`
+	FileSize     int    `json:"file_size"`
 }
 
 // Document represents a general file
 // (as opposed to photos, voice messages and audio files)
 type Document struct {
-	FileID   string     `json:"file_id"`
-	Thumb    *PhotoSize `json:"thumb"`
-	FileName string     `json:"file_name"`
-	MIMEType string     `json:"mime_type"`
-	FileSize int        `json:"file_size"`
+	FileID       string     `json:"file_id"`
+	FileUniqueID string     `json:"file_unique_id"`
+	Thumb        *PhotoSize `json:"thumb"`
+	FileName     string     `json:"file_name"`
+	MIMEType     string     `json:"mime_type"`
+	FileSize     int        `json:"file_size"`
 }
 
 // Game represents a game. Use BotFather to create and edit games,
@@ -132,16 +140,18 @@ type Game struct {
 // Animation represents an animation file
 // to be displayed in the message containing a game
 type Animation struct {
-	FileID   string     `json:"file_id"`
-	Thumb    *PhotoSize `json:"thumb"`
-	FileName string     `json:"file_name"`
-	MimeType string     `json:"mime_type"`
-	FileSize int        `json:"file_size"`
+	FileID       string     `json:"file_id"`
+	FileUniqueID string     `json:"file_unique_id"`
+	Thumb        *PhotoSize `json:"thumb"`
+	FileName     string     `json:"file_name"`
+	MimeType     string     `json:"mime_type"`
+	FileSize     int        `json:"file_size"`
 }
 
 // Sticker represents a sticker
 type Sticker struct {
 	FileID       string        `json:"file_id"`
+	FileUniqueID string        `json:"file_unique_id"`
 	Width        int           `json:"width"`
 	Height       int           `json:"height"`
 	IsAnimated   bool          `json:"is_animated"`
@@ -163,30 +173,33 @@ type MaskPosition struct {
 
 // Video represents a video file
 type Video struct {
-	FileID    string     `json:"file_id"`
-	Width     int        `json:"width"`
-	Height    int        `json:"height"`
-	Duration  int        `json:"duration"`
-	Thumbnail *PhotoSize `json:"thumb"`
-	MimeType  string     `json:"mime_type"`
-	FileSize  int        `json:"file_size"`
+	FileID       string     `json:"file_id"`
+	FileUniqueID string     `json:"file_unique_id"`
+	Width        int        `json:"width"`
+	Height       int        `json:"height"`
+	Duration     int        `json:"duration"`
+	Thumbnail    *PhotoSize `json:"thumb"`
+	MimeType     string     `json:"mime_type"`
+	FileSize     int        `json:"file_size"`
 }
 
 // Voice represents a voice note
 type Voice struct {
-	FileID   string `json:"file_id"`
-	Duration int    `json:"duration"`
-	MimeType string `json:"mime_type"`
-	FileSize int    `json:"file_size"`
+	FileID       string `json:"file_id"`
+	FileUniqueID string `json:"file_unique_id"`
+	Duration     int    `json:"duration"`
+	MimeType     string `json:"mime_type"`
+	FileSize     int    `json:"file_size"`
 }
 
 // VideoNote represents a video message
 type VideoNote struct {
-	FileID   string     `json:"file_id"`
-	Length   int        `json:"length"`
-	Duration int        `json:"duration"`
-	Thumb    *PhotoSize `json:"thumb"`
-	FileSize int        `json:"file_size"`
+	FileID       string     `json:"file_id"`
+	FileUniqueID string     `json:"file_unique_id"`
+	Length       int        `json:"length"`
+	Duration     int        `json:"duration"`
+	Thumb        *PhotoSize `json:"thumb"`
+	FileSize     int        `json:"file_size"`
 }
 
 // Contact represents a phone contact
@@ -386,9 +399,10 @@ type EncryptedPassportElement struct {
 
 // PassportFile represents a file uploaded to Telegram Passport
 type PassportFile struct {
-	FileID   string `json:"file_id"`
-	FileSize int    `json:"file_size"`
-	FileDate int    `json:"file_date"`
+	FileID       string `json:"file_id"`
+	FileUniqueID string `json:"file_unique_id"`
+	FileSize     int    `json:"file_size"`
+	FileDate     int    `json:"file_date"`
 }
 
 // EncryptedCredentials contains data required for decrypting and authenticating EncryptedPassportElement
