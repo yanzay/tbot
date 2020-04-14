@@ -37,6 +37,7 @@ type Server struct {
 	shippingHandler        func(*ShippingQuery)
 	preCheckoutHandler     func(*PreCheckoutQuery)
 	pollHandler            func(*Poll)
+	pollAnswerHandler      func(*PollAnswer)
 
 	middlewares []Middleware
 }
@@ -77,6 +78,7 @@ func New(token string, options ...ServerOption) *Server {
 		shippingHandler:        func(*ShippingQuery) {},
 		preCheckoutHandler:     func(*PreCheckoutQuery) {},
 		pollHandler:            func(*Poll) {},
+		pollAnswerHandler:      func(*PollAnswer) {},
 
 		stop: make(chan struct{}, 0),
 	}
@@ -150,6 +152,8 @@ func (s *Server) Start() error {
 					s.preCheckoutHandler(update.PreCheckoutQuery)
 				case update.Poll != nil:
 					s.pollHandler(update.Poll)
+				case update.PollAnswer != nil:
+					s.pollAnswerHandler(update.PollAnswer)
 				}
 			}
 			var f = handleUpdate
@@ -303,9 +307,14 @@ func (s *Server) HandlePreCheckout(handler func(*PreCheckoutQuery)) {
 	s.preCheckoutHandler = handler
 }
 
-// HandlePollUpdate set handler for native poll updates
+// HandlePollUpdate set handler for anonymous poll updates
 func (s *Server) HandlePollUpdate(handler func(*Poll)) {
 	s.pollHandler = handler
+}
+
+// HandlePollAnswer set handler for non-anonymous poll updates
+func (s *Server) HandlePollAnswer(handler func(*PollAnswer)) {
+	s.pollAnswerHandler = handler
 }
 
 func (s *Server) handleMessage(msg *Message) {

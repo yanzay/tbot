@@ -110,9 +110,16 @@ type ReplyKeyboardMarkup struct {
 
 // KeyboardButton represents one button of the reply keyboard
 type KeyboardButton struct {
-	Text            string `json:"text"`
-	RequestContact  bool   `json:"request_contact"`
-	RequestLocation bool   `json:"request_location"`
+	Text            string                  `json:"text"`
+	RequestContact  bool                    `json:"request_contact"`
+	RequestLocation bool                    `json:"request_location"`
+	RequestPoll     *KeyboardButtonPollType `json:"request_poll,omitempty"`
+}
+
+// KeyboardButtonPollType represents type of a poll,
+// which is allowed to be created and sent when the corresponding button is pressed
+type KeyboardButtonPollType struct {
+	Type string `json:"type"`
 }
 
 func (c *Client) setWebhook(webhookURL string) error {
@@ -2339,8 +2346,45 @@ func (c *Client) GetInlineGameHighScores(inlineMessageID string, userID int) ([]
 	return scores, err
 }
 
+// PollType “quiz” or “regular”, defaults to “regular”
+type PollType string
+
+// Poll types
+const (
+	PollTypeQuiz    PollType = "quiz"
+	PollTypeRegular PollType = "regular"
+)
+
+// SendPoll options
+var (
+	OptNotAnonymous = func(u url.Values) {
+		u.Set("is_anonymous", "false")
+	}
+	OptPollType = func(pollType PollType) sendOption {
+		return func(u url.Values) {
+			u.Set("type", string(pollType))
+		}
+	}
+	OptAllowMultipleAnswers = func(u url.Values) {
+		u.Set("allows_multiple_answers", "true")
+	}
+	OptCorrectOptionID = func(id int) sendOption {
+		return func(u url.Values) {
+			u.Set("correct_option_id", fmt.Sprint(id))
+		}
+	}
+	OptClosedPoll = func(u url.Values) {
+		u.Set("is_closed", "true")
+	}
+)
+
 /*
 SendPoll sends native telegram poll. Available Options:
+	- OptNotAnonymous
+	- OptPollType(pollType PollType)
+	- OptAllowMultipleAnswers
+	- OptCorrectOptionID(id int)
+	- OptClosedPoll
 	- OptDisableNotification
 	- OptReplyToMessageID(id int)
 	- OptInlineKeyboardMarkup(markup *InlineKeyboardMarkup)
