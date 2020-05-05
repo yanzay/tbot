@@ -18,6 +18,7 @@ var (
 type Server struct {
 	webhookURL    string
 	listenAddr    string
+	baseURL       string
 	httpClient    *http.Client
 	client        *Client
 	token         string
@@ -62,12 +63,14 @@ type messageHandler struct {
 New creates new Server. Available options:
 	WithWebook(url, addr string)
 	WithHTTPClient(client *http.Client)
+	WithBaseURL(baseURL string)
 */
 func New(token string, options ...ServerOption) *Server {
 	s := &Server{
 		httpClient: http.DefaultClient,
 		token:      token,
 		logger:     nopLogger{},
+		baseURL:    apiBaseURL,
 
 		editMessageHandler:     func(*Message) {},
 		channelPostHandler:     func(*Message) {},
@@ -86,7 +89,7 @@ func New(token string, options ...ServerOption) *Server {
 		opt(s)
 	}
 	// bot, err :=  tgbotapi.NewBotAPIWithClient(token, s.httpClient)
-	s.client = NewClient(token, s.httpClient, apiBaseURL)
+	s.client = NewClient(token, s.httpClient, s.baseURL)
 	return s
 }
 
@@ -96,6 +99,14 @@ func WithWebhook(url, addr string) ServerOption {
 	return func(s *Server) {
 		s.webhookURL = url
 		s.listenAddr = addr
+	}
+}
+
+// WithBaseURL sets custom apiBaseURL for server.
+// It may be necessary to run the server in some countries
+func WithBaseURL(baseURL string) ServerOption {
+	return func(s *Server) {
+		s.baseURL = baseURL
 	}
 }
 
@@ -210,7 +221,7 @@ func (s *Server) listenUpdates() (chan *Update, error) {
 
 func (s *Server) longPoolUpdates() (chan *Update, error) {
 	s.logger.Debugf("fetching updates...")
-	endpoint := fmt.Sprintf("%s/bot%s/%s", apiBaseURL, s.token, "getUpdates")
+	endpoint := fmt.Sprintf("%s/bot%s/%s", s.baseURL, s.token, "getUpdates")
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		return nil, err
