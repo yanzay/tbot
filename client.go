@@ -12,6 +12,7 @@ import (
 // Client is a low-level Telegram client
 type Client struct {
 	token         string
+	baseURL       string
 	url           string
 	httpClient    *http.Client
 	nextOffset    int
@@ -26,6 +27,7 @@ func NewClient(token string, httpClient *http.Client, baseURL string) *Client {
 	return &Client{
 		token:      token,
 		httpClient: httpClient,
+		baseURL:    baseURL,
 		url:        fmt.Sprintf("%s/bot%s/", baseURL, token) + "%s",
 	}
 }
