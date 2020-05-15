@@ -1299,6 +1299,21 @@ func (c *Client) AnswerCallbackQuery(callbackQueryID string, opts ...sendOption)
 	return c.doRequest("answerCallbackQuery", req, &success)
 }
 
+// BotCommand represents a bot command.
+type BotCommand struct {
+	Command     string `json:"command"`     // Text of the command, 1-32 characters. Can contain only lowercase English letters, digits and underscores.
+	Description string `json:"description"` // Description of the command, 3-256 characters.
+}
+
+/*
+GetMyCommands get the current list of the bot's commands.
+*/
+func (c *Client) GetMyCommands() (*[]BotCommand, error) {
+	botCommands := &[]BotCommand{}
+	err := c.doRequest("getMyCommands", url.Values{}, botCommands)
+	return botCommands, err
+}
+
 /*
 EditMessageText edit text and game messages sent by the bot. Available options:
 	- OptParseModeHTML
