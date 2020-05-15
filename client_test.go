@@ -158,6 +158,25 @@ func TestSendPhotoFile(t *testing.T) {
 	}
 }
 
+func TestSendDice(t *testing.T) {
+	c := testClient(t, `
+		{
+			"ok": true,
+			"result": {
+				"emoji": "🎲",
+				"value": 6
+			}
+		}
+	`)
+	msg, err := c.SendDice("123", "🎲")
+	if err != nil {
+		t.Fatalf("error on sendDice: %v", err)
+	}
+	if msg.Value == 0 {
+		t.Fatalf("empty dice value")
+	}
+}
+
 func testClient(t *testing.T, resp string) *tbot.Client {
 	t.Helper()
 	handler := func(w http.ResponseWriter, r *http.Request) {

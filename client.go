@@ -1299,6 +1299,32 @@ func (c *Client) AnswerCallbackQuery(callbackQueryID string, opts ...sendOption)
 	return c.doRequest("answerCallbackQuery", req, &success)
 }
 
+// BotCommand represents a bot command.
+type BotCommand struct {
+	Command     string `json:"command"`     // Text of the command, 1-32 characters. Can contain only lowercase English letters, digits and underscores.
+	Description string `json:"description"` // Description of the command, 3-256 characters.
+}
+
+/*
+GetMyCommands get the current list of bot commands.
+*/
+func (c *Client) GetMyCommands() (*[]BotCommand, error) {
+	botCommands := &[]BotCommand{}
+	err := c.doRequest("getMyCommands", url.Values{}, botCommands)
+	return botCommands, err
+}
+
+/*
+SetMyCommands set the list of bot commands.
+*/
+func (c *Client) SetMyCommands(commands []BotCommand) error {
+	req := url.Values{}
+	cmd, _ := json.Marshal(commands)
+	req.Set("commands", string(cmd))
+	var set bool
+	return c.doRequest("setMyCommands", url.Values{}, set)
+}
+
 /*
 EditMessageText edit text and game messages sent by the bot. Available options:
 	- OptParseModeHTML
@@ -1461,11 +1487,12 @@ func (c *Client) SendSticker(chatID, fileID string, opts ...sendOption) (*Messag
 
 // StickerSet represents sticker set
 type StickerSet struct {
-	Name          string    `json:"name"`
-	Title         string    `json:"title"`
-	IsAnimated    bool      `json:"is_animated"`
-	ContainsMasks bool      `json:"contains_masks"`
-	Stickers      []Sticker `json:"stickers"`
+	Name          string     `json:"name"`
+	Title         string     `json:"title"`
+	IsAnimated    bool       `json:"is_animated"`
+	ContainsMasks bool       `json:"contains_masks"`
+	Stickers      []Sticker  `json:"stickers"`
+	Thumb         *PhotoSize `json:"thumb"`
 }
 
 /*
@@ -1501,12 +1528,16 @@ var (
 			v.Set("mask_position", string(p))
 		}
 	}
+	OptAnimatedSticker = func(v url.Values) {
+		v.Set("tgs_sticker", "true")
+	}
 )
 
 /*
 CreateNewStickerSetFile creates new sticker set with sticker file. Available options:
 	- OptContainsMasks
 	- OptMaskPosition(pos *MaskPosition)
+	- OptAnimatedSticker
 */
 func (c *Client) CreateNewStickerSetFile(userID int, name, title, stickerFilename, emojis string, opts ...sendOption) error {
 	req := url.Values{}
@@ -1517,8 +1548,15 @@ func (c *Client) CreateNewStickerSetFile(userID int, name, title, stickerFilenam
 	for _, opt := range opts {
 		opt(req)
 	}
+	stickerFile := inputFile{name: stickerFilename}
+	if len(req.Get("tgs_sticker")) > 0 {
+		stickerFile.field = "tgs_sticker"
+		req.Del("tgs_sticker")
+	} else {
+		stickerFile.field = "png_sticker"
+	}
 	var created bool
-	return c.doRequestWithFiles("createNewStickerSet", req, &created, inputFile{field: "png_sticker", name: stickerFilename})
+	return c.doRequestWithFiles("createNewStickerSet", req, &created, stickerFile)
 }
 
 /*
@@ -1543,6 +1581,7 @@ func (c *Client) CreateNewStickerSet(userID int, name, title, fileID, emojis str
 /*
 AddStickerToSetFile add a new sticker file to a set created by the bot. Available options:
 	- OptMaskPosition(pos *MaskPosition)
+	- OptAnimatedSticker
 */
 func (c *Client) AddStickerToSetFile(userID int, name, filename, emojis string, opts ...sendOption) error {
 	req := url.Values{}
@@ -1552,8 +1591,15 @@ func (c *Client) AddStickerToSetFile(userID int, name, filename, emojis string, 
 	for _, opt := range opts {
 		opt(req)
 	}
+	stickerFile := inputFile{name: filename}
+	if len(req.Get("tgs_sticker")) > 0 {
+		stickerFile.field = "tgs_sticker"
+		req.Del("tgs_sticker")
+	} else {
+		stickerFile.field = "png_sticker"
+	}
 	var added bool
-	return c.doRequestWithFiles("addStickerToSet", req, &added, inputFile{field: "png_sticker", name: filename})
+	return c.doRequestWithFiles("addStickerToSet", req, &added, stickerFile)
 }
 
 /*
@@ -1592,6 +1638,29 @@ func (c *Client) DeleteStickerFromSet(fileID string) error {
 	req.Set("sticker", fileID)
 	var deleted bool
 	return c.doRequest("deleteStickerFromSet", req, &deleted)
+}
+
+/*
+SetStickerSetThumb sets the thumbnail of a sticker set with a previously uploaded file.
+*/
+func (c *Client) SetStickerSetThumb(userID int, name, thumb string) error {
+	req := url.Values{}
+	req.Set("user_id", fmt.Sprint(userID))
+	req.Set("name", name)
+	req.Set("thumb", thumb)
+	var set bool
+	return c.doRequest("setStickerSetThumb", req, &set)
+}
+
+/*
+SetStickerSetThumbFile sets the thumbnail of a sticker set with thumbnail file.
+*/
+func (c *Client) SetStickerSetThumbFile(userID int, name, thumbnailFilename string) error {
+	req := url.Values{}
+	req.Set("user_id", fmt.Sprint(userID))
+	req.Set("name", name)
+	var set bool
+	return c.doRequestWithFiles("setStickerSetThumb", req, &set, inputFile{field: "thumb", name: thumbnailFilename})
 }
 
 // InputMessageContent content of a message to be sent as a result of an inline query
@@ -2408,6 +2477,29 @@ func (c *Client) SendPoll(chatID string, question string, options []string, opts
 	msg := &Message{}
 	err := c.doRequest("sendPoll", req, msg)
 	return msg, err
+}
+
+/*
+SendDice sends native telegram dice. Available Options:
+	- OptDisableNotification
+	- OptReplyToMessageID(id int)
+	- OptInlineKeyboardMarkup(markup *InlineKeyboardMarkup)
+	- OptReplyKeyboardMarkup(markup *ReplyKeyboardMarkup)
+	- OptReplyKeyboardRemove
+	- OptReplyKeyboardRemoveSelective
+	- OptForceReply
+	- OptForceReplySelective
+*/
+func (c *Client) SendDice(chatID string, emoji string, opts ...sendOption) (*Dice, error) {
+	req := url.Values{}
+	req.Set("chat_id", chatID)
+	req.Set("emoji", emoji)
+	for _, opt := range opts {
+		opt(req)
+	}
+	dice := &Dice{}
+	err := c.doRequest("sendDice", req, dice)
+	return dice, err
 }
 
 /*
