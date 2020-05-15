@@ -1306,12 +1306,23 @@ type BotCommand struct {
 }
 
 /*
-GetMyCommands get the current list of the bot's commands.
+GetMyCommands get the current list of bot commands.
 */
 func (c *Client) GetMyCommands() (*[]BotCommand, error) {
 	botCommands := &[]BotCommand{}
 	err := c.doRequest("getMyCommands", url.Values{}, botCommands)
 	return botCommands, err
+}
+
+/*
+SetMyCommands set the current list of bot commands.
+*/
+func (c *Client) SetMyCommands(commands []BotCommand) error {
+	req := url.Values{}
+	cmd, _ := json.Marshal(commands)
+	req.Set("commands", string(cmd))
+	var set bool
+	return c.doRequest("setMyCommands", url.Values{}, set)
 }
 
 /*
