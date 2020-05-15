@@ -1487,11 +1487,12 @@ func (c *Client) SendSticker(chatID, fileID string, opts ...sendOption) (*Messag
 
 // StickerSet represents sticker set
 type StickerSet struct {
-	Name          string    `json:"name"`
-	Title         string    `json:"title"`
-	IsAnimated    bool      `json:"is_animated"`
-	ContainsMasks bool      `json:"contains_masks"`
-	Stickers      []Sticker `json:"stickers"`
+	Name          string     `json:"name"`
+	Title         string     `json:"title"`
+	IsAnimated    bool       `json:"is_animated"`
+	ContainsMasks bool       `json:"contains_masks"`
+	Stickers      []Sticker  `json:"stickers"`
+	Thumb         *PhotoSize `json:"thumb"`
 }
 
 /*
@@ -1548,6 +1549,24 @@ func (c *Client) CreateNewStickerSetFile(userID int, name, title, stickerFilenam
 }
 
 /*
+CreateNewStickerSetAnimatedFile creates new sticker set with animated sticker file. Available options:
+	- OptContainsMasks
+	- OptMaskPosition(pos *MaskPosition)
+*/
+func (c *Client) CreateNewStickerSetAnimatedFile(userID int, name, title, stickerFilename, emojis string, opts ...sendOption) error {
+	req := url.Values{}
+	req.Set("user_id", fmt.Sprint(userID))
+	req.Set("name", name)
+	req.Set("title", title)
+	req.Set("emojis", emojis)
+	for _, opt := range opts {
+		opt(req)
+	}
+	var created bool
+	return c.doRequestWithFiles("createNewStickerSet", req, &created, inputFile{field: "tgs_sticker", name: stickerFilename})
+}
+
+/*
 CreateNewStickerSet creates new sticker set with previously uploaded file. Available options:
 	- OptContainsMasks
 	- OptMaskPosition(pos *MaskPosition)
@@ -1580,6 +1599,22 @@ func (c *Client) AddStickerToSetFile(userID int, name, filename, emojis string, 
 	}
 	var added bool
 	return c.doRequestWithFiles("addStickerToSet", req, &added, inputFile{field: "png_sticker", name: filename})
+}
+
+/*
+AddStickerToSetAnimatedFile add a new animated sticker file to a set created by the bot. Available options:
+	- OptMaskPosition(pos *MaskPosition)
+*/
+func (c *Client) AddStickerToSetAnimatedFile(userID int, name, filename, emojis string, opts ...sendOption) error {
+	req := url.Values{}
+	req.Set("user_id", fmt.Sprint(userID))
+	req.Set("name", name)
+	req.Set("emojis", emojis)
+	for _, opt := range opts {
+		opt(req)
+	}
+	var added bool
+	return c.doRequestWithFiles("addStickerToSet", req, &added, inputFile{field: "tgs_sticker", name: filename})
 }
 
 /*
@@ -1618,6 +1653,29 @@ func (c *Client) DeleteStickerFromSet(fileID string) error {
 	req.Set("sticker", fileID)
 	var deleted bool
 	return c.doRequest("deleteStickerFromSet", req, &deleted)
+}
+
+/*
+SetStickerSetThumb sets the thumbnail of a sticker set with a previously uploaded file.
+*/
+func (c *Client) SetStickerSetThumb(userID int, name, thumb string) error {
+	req := url.Values{}
+	req.Set("user_id", fmt.Sprint(userID))
+	req.Set("name", name)
+	req.Set("thumb", thumb)
+	var set bool
+	return c.doRequest("setStickerSetThumb", req, &set)
+}
+
+/*
+SetStickerSetThumbFile sets the thumbnail of a sticker set with thumbnail file.
+*/
+func (c *Client) SetStickerSetThumbFile(userID int, name, thumbnailFilename string) error {
+	req := url.Values{}
+	req.Set("user_id", fmt.Sprint(userID))
+	req.Set("name", name)
+	var set bool
+	return c.doRequestWithFiles("createNewStickerSet", req, &set, inputFile{field: "thumb", name: thumbnailFilename})
 }
 
 // InputMessageContent content of a message to be sent as a result of an inline query
