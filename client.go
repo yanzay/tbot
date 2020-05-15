@@ -1581,7 +1581,7 @@ func (c *Client) CreateNewStickerSet(userID int, name, title, fileID, emojis str
 /*
 AddStickerToSetFile add a new sticker file to a set created by the bot. Available options:
 	- OptMaskPosition(pos *MaskPosition)
-	= OptAnimatedSticker
+	- OptAnimatedSticker
 */
 func (c *Client) AddStickerToSetFile(userID int, name, filename, emojis string, opts ...sendOption) error {
 	req := url.Values{}
