@@ -1315,7 +1315,7 @@ func (c *Client) GetMyCommands() (*[]BotCommand, error) {
 }
 
 /*
-SetMyCommands set the current list of bot commands.
+SetMyCommands set the list of bot commands.
 */
 func (c *Client) SetMyCommands(commands []BotCommand) error {
 	req := url.Values{}
