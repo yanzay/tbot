@@ -298,6 +298,7 @@ type Message struct {
 	Location              *Location             `json:"location"`
 	Venue                 *Venue                `json:"venue"`
 	Poll                  *Poll                 `json:"poll"`
+	Dice                  *Dice                 `json:"dice"`
 	NewChatMembers        []*User               `json:"new_chat_members"`
 	LeftChatMember        *User                 `json:"left_chat_member"`
 	NewChatTitle          string                `json:"new_chat_title"`
@@ -428,6 +429,12 @@ type Poll struct {
 	Type                  string       `json:"type"`
 	AllowsMultipleAnswers bool         `json:"allows_multiple_answers"`
 	CorrectOptionID       int          `json:"correct_option_id"`
+}
+
+// Dice represents native telegram dice
+type Dice struct {
+	Emoji string `json:"emoji"`
+	Value int    `json:"value"`
 }
 
 // PollOption is an option for Poll

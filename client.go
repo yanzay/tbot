@@ -2411,6 +2411,29 @@ func (c *Client) SendPoll(chatID string, question string, options []string, opts
 }
 
 /*
+SendDice sends native telegram dice. Available Options:
+	- OptDisableNotification
+	- OptReplyToMessageID(id int)
+	- OptInlineKeyboardMarkup(markup *InlineKeyboardMarkup)
+	- OptReplyKeyboardMarkup(markup *ReplyKeyboardMarkup)
+	- OptReplyKeyboardRemove
+	- OptReplyKeyboardRemoveSelective
+	- OptForceReply
+	- OptForceReplySelective
+*/
+func (c *Client) SendDice(chatID string, emoji string, opts ...sendOption) (*Dice, error) {
+	req := url.Values{}
+	req.Set("chat_id", chatID)
+	req.Set("emoji", emoji)
+	for _, opt := range opts {
+		opt(req)
+	}
+	dice := &Dice{}
+	err := c.doRequest("sendDice", req, dice)
+	return dice, err
+}
+
+/*
 StopPoll stops poll. Available Options:
 	- OptInlineKeyboardMarkup(markup *InlineKeyboardMarkup)
 */
