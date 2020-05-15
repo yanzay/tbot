@@ -1660,7 +1660,7 @@ func (c *Client) SetStickerSetThumbFile(userID int, name, thumbnailFilename stri
 	req.Set("user_id", fmt.Sprint(userID))
 	req.Set("name", name)
 	var set bool
-	return c.doRequestWithFiles("createNewStickerSet", req, &set, inputFile{field: "thumb", name: thumbnailFilename})
+	return c.doRequestWithFiles("setStickerSetThumb", req, &set, inputFile{field: "thumb", name: thumbnailFilename})
 }
 
 // InputMessageContent content of a message to be sent as a result of an inline query
