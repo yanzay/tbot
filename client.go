@@ -1492,7 +1492,7 @@ type StickerSet struct {
 	IsAnimated    bool       `json:"is_animated"`
 	ContainsMasks bool       `json:"contains_masks"`
 	Stickers      []Sticker  `json:"stickers"`
-	Thumb         *PhotoSize `json:"thumb,omitempty"`
+	Thumb         *PhotoSize `json:"thumb"`
 }
 
 /*
