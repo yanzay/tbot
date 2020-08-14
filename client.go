@@ -1322,7 +1322,7 @@ func (c *Client) SetMyCommands(commands []BotCommand) error {
 	cmd, _ := json.Marshal(commands)
 	req.Set("commands", string(cmd))
 	var set bool
-	return c.doRequest("setMyCommands", url.Values{}, set)
+	return c.doRequest("setMyCommands", req, &set)
 }
 
 /*
