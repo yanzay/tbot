@@ -61,7 +61,7 @@ type messageHandler struct {
 
 /*
 New creates new Server. Available options:
-	WithWebook(url, addr string)
+	WithWebhook(url, addr string)
 	WithHTTPClient(client *http.Client)
 	WithBaseURL(baseURL string)
 */
@@ -94,7 +94,7 @@ func New(token string, options ...ServerOption) *Server {
 }
 
 // WithWebhook returns ServerOption for given Webhook URL and Server address to listen.
-// e.g. WithWebook("https://bot.example.com/super/url", "0.0.0.0:8080")
+// e.g. WithWebhook("https://bot.example.com/super/url", "0.0.0.0:8080")
 func WithWebhook(url, addr string) ServerOption {
 	return func(s *Server) {
 		s.webhookURL = url
