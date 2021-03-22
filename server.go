@@ -10,23 +10,24 @@ import (
 	"time"
 )
 
-var (
-	apiBaseURL = "https://api.telegram.org"
-)
+const apiBaseURL = "https://api.telegram.org"
 
 // Server will connect and serve all updates from Telegram
 type Server struct {
-	webhookURL    string
-	listenAddr    string
-	baseURL       string
-	httpClient    *http.Client
-	client        *Client
-	token         string
-	logger        Logger
-	stop          chan struct{}
-	updatesParams url.Values
-	bufferSize    int
-	nextOffset    int
+	webhookURL      string
+	webhookHandler  func(w http.ResponseWriter, r *http.Request)
+	useCustomServer bool
+	listenAddr      string
+	baseURL         string
+	httpClient      *http.Client
+	client          *Client
+	token           string
+	logger          Logger
+	stop            chan struct{}
+	updates         chan *Update
+	updatesParams   url.Values
+	bufferSize      int
+	nextOffset      int
 
 	messageHandlers        []messageHandler
 	editMessageHandler     handlerFunc
@@ -62,15 +63,17 @@ type messageHandler struct {
 /*
 New creates new Server. Available options:
 	WithWebhook(url, addr string)
+	WithWebhookForCustomServer(url string)
 	WithHTTPClient(client *http.Client)
 	WithBaseURL(baseURL string)
 */
 func New(token string, options ...ServerOption) *Server {
 	s := &Server{
-		httpClient: http.DefaultClient,
-		token:      token,
-		logger:     nopLogger{},
-		baseURL:    apiBaseURL,
+		httpClient:      http.DefaultClient,
+		token:           token,
+		logger:          nopLogger{},
+		baseURL:         apiBaseURL,
+		useCustomServer: false,
 
 		editMessageHandler:     func(*Message) {},
 		channelPostHandler:     func(*Message) {},
@@ -88,6 +91,18 @@ func New(token string, options ...ServerOption) *Server {
 	for _, opt := range options {
 		opt(s)
 	}
+
+	s.updates = make(chan *Update, s.bufferSize)
+	s.webhookHandler = func(w http.ResponseWriter, r *http.Request) {
+		up := &Update{}
+		err := json.NewDecoder(r.Body).Decode(up)
+		if err != nil {
+			s.logger.Errorf("unable to decode update: %v", err)
+			return
+		}
+		s.updates <- up
+	}
+
 	// bot, err :=  tgbotapi.NewBotAPIWithClient(token, s.httpClient)
 	s.client = NewClient(token, s.httpClient, s.baseURL)
 	return s
@@ -99,6 +114,16 @@ func WithWebhook(url, addr string) ServerOption {
 	return func(s *Server) {
 		s.webhookURL = url
 		s.listenAddr = addr
+	}
+}
+
+// WithWebhookForCustomServer sets the useCustomServer to true in order to handle the s.webhookHandler
+// with an custom server implementation
+func WithWebhookForCustomServer(url string) ServerOption {
+	return func(s *Server) {
+		s.bufferSize = 5
+		s.webhookURL = url
+		s.useCustomServer = true
 	}
 }
 
@@ -134,13 +159,13 @@ func (s *Server) Start() error {
 	if len(s.token) == 0 {
 		return fmt.Errorf("token is empty")
 	}
-	updates, err := s.getUpdates()
+	err := s.initializeUpdates()
 	if err != nil {
 		return err
 	}
 	for {
 		select {
-		case update := <-updates:
+		case update := <-s.updates:
 			handleUpdate := func(update *Update) {
 				switch {
 				case update.Message != nil:
@@ -188,43 +213,43 @@ func (s *Server) Stop() {
 	s.stop <- struct{}{}
 }
 
-func (s *Server) getUpdates() (chan *Update, error) {
-	if s.webhookURL != "" && s.listenAddr != "" {
+// GetWebhookHandler returns the webhook handler
+func (s *Server) GetWebhookHandler() func(w http.ResponseWriter, r *http.Request) {
+	return s.webhookHandler
+}
+
+func (s *Server) initializeUpdates() error {
+	if s.useCustomServer || (s.webhookURL != "" && s.listenAddr != "") {
 		return s.listenUpdates()
 	}
 	s.client.deleteWebhook()
 	return s.longPoolUpdates()
 }
 
-func (s *Server) listenUpdates() (chan *Update, error) {
+func (s *Server) listenUpdates() error {
 	err := s.client.setWebhook(s.webhookURL)
 	if err != nil {
-		return nil, fmt.Errorf("unable to set webhook: %v", err)
+		return fmt.Errorf("unable to set webhook: %v", err)
 	}
-	updates := make(chan *Update)
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		up := &Update{}
-		err := json.NewDecoder(r.Body).Decode(up)
+
+	if !s.useCustomServer {
+		// Start standalone server for webhookHandler
+		l, err := net.Listen("tcp", s.listenAddr)
 		if err != nil {
-			s.logger.Errorf("unable to decode update: %v", err)
-			return
+			return err
 		}
-		updates <- up
+		go http.Serve(l, http.HandlerFunc(s.webhookHandler))
 	}
-	l, err := net.Listen("tcp", s.listenAddr)
-	if err != nil {
-		return nil, err
-	}
-	go http.Serve(l, http.HandlerFunc(handler))
-	return updates, nil
+
+	return nil
 }
 
-func (s *Server) longPoolUpdates() (chan *Update, error) {
+func (s *Server) longPoolUpdates() error {
 	s.logger.Debugf("fetching updates...")
 	endpoint := fmt.Sprintf("%s/bot%s/%s", s.baseURL, s.token, "getUpdates")
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	params := s.updatesParams
 	if params == nil {
@@ -232,7 +257,6 @@ func (s *Server) longPoolUpdates() (chan *Update, error) {
 	}
 	params.Set("timeout", fmt.Sprint(3600))
 	req.URL.RawQuery = params.Encode()
-	updates := make(chan *Update, s.bufferSize)
 	go func() {
 		for {
 			params.Set("offset", fmt.Sprint(s.nextOffset))
@@ -265,11 +289,11 @@ func (s *Server) longPoolUpdates() (chan *Update, error) {
 			}
 			for _, up := range updatesResp.Result {
 				s.nextOffset = up.UpdateID + 1
-				updates <- up
+				s.updates <- up
 			}
 		}
 	}()
-	return updates, nil
+	return nil
 }
 
 // HandleMessage sets handler for incoming messages
