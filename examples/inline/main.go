@@ -51,17 +51,13 @@ func (a *application) callbackHandler(cq *tbot.CallbackQuery) {
 }
 
 func makeButtons(ups, downs int) *tbot.InlineKeyboardMarkup {
-	button1 := tbot.InlineKeyboardButton{
-		Text:         fmt.Sprintf("👍 %d", ups),
-		CallbackData: "up",
-	}
-	button2 := tbot.InlineKeyboardButton{
-		Text:         fmt.Sprintf("👎 %d", downs),
-		CallbackData: "down",
-	}
-	return &tbot.InlineKeyboardMarkup{
-		InlineKeyboard: [][]tbot.InlineKeyboardButton{
-			[]tbot.InlineKeyboardButton{button1, button2},
-		},
-	}
+	km := tbot.NewKeyboardMaker()
+	firstRow := km.AddRow()
+	firstRow.AddButton(fmt.Sprintf("👍 %d", ups), "up", "")
+	firstRow.AddButton(fmt.Sprintf("👎 %d", downs), "down", "")
+
+	secondRow := km.AddRow()
+	secondRow.AddButton("To a random web!", "rand-web", "http://google.com")
+
+	return km.Build()
 }
