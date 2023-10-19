@@ -28,6 +28,8 @@ type Server struct {
 	bufferSize    int
 	nextOffset    int
 
+	callbackQueryMatcher map[string]func(*CallbackQuery)
+
 	messageHandlers        []messageHandler
 	editMessageHandler     handlerFunc
 	channelPostHandler     handlerFunc
@@ -61,6 +63,7 @@ type messageHandler struct {
 
 /*
 New creates new Server. Available options:
+
 	WithWebhook(url, addr string)
 	WithHTTPClient(client *http.Client)
 	WithBaseURL(baseURL string)
@@ -83,7 +86,9 @@ func New(token string, options ...ServerOption) *Server {
 		pollHandler:            func(*Poll) {},
 		pollAnswerHandler:      func(*PollAnswer) {},
 
-		stop: make(chan struct{}, 0),
+		callbackQueryMatcher: make(map[string]func(*CallbackQuery)),
+
+		stop: make(chan struct{}),
 	}
 	for _, opt := range options {
 		opt(s)
@@ -303,9 +308,24 @@ func (s *Server) HandleInlineResult(handler func(*ChosenInlineResult)) {
 	s.inlineResultHandler = handler
 }
 
-// HandleCallback set handler for inline buttons
-func (s *Server) HandleCallback(handler func(*CallbackQuery)) {
-	s.callbackHandler = handler
+// HandleCallback set default callback handler for inline buttons
+// Use RegisterCallbackHandler if you want to define handlers for specific callback query data
+func (s *Server) HandleCallback(defaultCallbackHandler func(*CallbackQuery)) {
+	generalCallbackHandler := func(cq *CallbackQuery) {
+		handler, ok := s.callbackQueryMatcher[cq.Data]
+		if !ok {
+			handler = defaultCallbackHandler
+		}
+		handler(cq)
+	}
+	s.callbackHandler = generalCallbackHandler
+}
+
+// Define callback handlers per key, and the key is actually the cq.Data we attach to our buttons
+//
+// Note: It only works if you call HandleCallback along this function.
+func (s *Server) RegisterCallbackHandler(key string, handler func(*CallbackQuery)) {
+	s.callbackQueryMatcher[key] = handler
 }
 
 // HandleShipping set handler for shipping queries
