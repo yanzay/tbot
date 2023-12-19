@@ -63,7 +63,8 @@ func (c *Client) doRequestWithFiles(method string, request url.Values, response 
 
 	go func() {
 		defer close(done)
-		req, err := http.NewRequest(http.MethodPost, endpoint, r)
+		var req *http.Request
+		req, err = http.NewRequest(http.MethodPost, endpoint, r)
 		if err != nil {
 			c.logger.Error(err)
 			return
