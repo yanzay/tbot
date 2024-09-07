@@ -2555,3 +2555,39 @@ func (c *Client) SetChatPermissions(chatID string, permissions *ChatPermissions)
 	var set bool
 	return c.doRequest("setChatPermissions", req, &set)
 }
+
+type reaction struct {
+	Type  string `json:"type"`
+	Emoji string `json:"emoji"`
+}
+
+/*
+SetMessageReaction set emojis to message.
+Use this method to change the chosen reactions on a message.
+Service messages can't be reacted to. Automatically forwarded messages from a channel to
+its discussion group have the same available reactions as messages in the channel.
+Bots can't use paid reactions.
+*/
+func (c *Client) SetMessageReaction(chatID string, messageID int, isBig bool, emojis ...string) error {
+	if len(emojis) == 0 {
+		return errors.New("no emojis specified")
+	}
+
+	var reactions []reaction
+	for _, emoji := range emojis {
+		reactions = append(reactions, reaction{
+			Type:  "emoji", // only "emoji" type supported
+			Emoji: emoji,
+		})
+	}
+
+	reactionsData, _ := json.Marshal(reactions)
+	req := url.Values{}
+	req.Set("chat_id", chatID)
+	req.Set("message_id", fmt.Sprint(messageID))
+	req.Set("is_big", strconv.FormatBool(isBig))
+	req.Set("reaction", string(reactionsData))
+
+	var set bool
+	return c.doRequest("setMessageReaction", req, &set)
+}

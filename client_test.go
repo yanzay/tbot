@@ -177,6 +177,17 @@ func TestSendDice(t *testing.T) {
 	}
 }
 
+func TestSetMessageReaction(t *testing.T) {
+	c := testClient(t, `
+		{"ok":true,"result":true}
+	`)
+
+	err := c.SetMessageReaction("123", 123, false, "🎲")
+	if err != nil {
+		t.Fatalf("error on SetMessageReaction: %v", err)
+	}
+}
+
 func testClient(t *testing.T, resp string) *tbot.Client {
 	t.Helper()
 	handler := func(w http.ResponseWriter, r *http.Request) {
