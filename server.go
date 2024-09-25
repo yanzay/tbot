@@ -61,6 +61,13 @@ type messageHandler struct {
 	f  handlerFunc
 }
 
+func NewWithHttpClient(token string, httpClient *http.Client, options ...ServerOption) *Server {
+	s := New(token, options...)
+	s.client.httpClient = httpClient
+
+	return s
+}
+
 /*
 New creates new Server. Available options:
 
