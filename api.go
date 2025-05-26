@@ -70,6 +70,9 @@ func (c *Client) doRequestWithFiles(method string, request url.Values, response 
 		}
 		req.Header.Set("Content-Type", mw.FormDataContentType())
 		resp, err = c.httpClient.Do(req)
+		if err != nil {
+			c.logger.Error(err)
+		}
 	}()
 
 	for k := range request {
@@ -93,9 +96,7 @@ func (c *Client) doRequestWithFiles(method string, request url.Values, response 
 	w.Close()
 
 	<-done // post request is done
-	if err != nil {
-		return err
-	}
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unexpected status code: %s", resp.Status)
 	}

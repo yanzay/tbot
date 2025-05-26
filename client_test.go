@@ -180,7 +180,7 @@ func TestSendDice(t *testing.T) {
 func testClient(t *testing.T, resp string) *tbot.Client {
 	t.Helper()
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, resp)
+		fmt.Fprint(w, resp)
 	}
 	httpServer := httptest.NewServer(http.HandlerFunc(handler))
 	httpClient := httpServer.Client()

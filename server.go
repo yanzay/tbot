@@ -1,11 +1,11 @@
 package tbot
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"regexp"
 	"time"
 )
@@ -16,17 +16,16 @@ var (
 
 // Server will connect and serve all updates from Telegram
 type Server struct {
-	webhookURL    string
-	listenAddr    string
-	baseURL       string
-	httpClient    *http.Client
-	client        *Client
-	token         string
-	logger        Logger
-	stop          chan struct{}
-	updatesParams url.Values
-	bufferSize    int
-	nextOffset    int
+	webhookURL string
+	listenAddr string
+	baseURL    string
+	httpClient *http.Client
+	client     *Client
+	token      string
+	logger     Logger
+	stop       chan struct{}
+	bufferSize int
+	nextOffset int
 
 	callbackQueryMatcher map[string]func(*CallbackQuery)
 
@@ -41,6 +40,7 @@ type Server struct {
 	preCheckoutHandler     func(*PreCheckoutQuery)
 	pollHandler            func(*Poll)
 	pollAnswerHandler      func(*PollAnswer)
+	chatMemberHandler      func(*ChatMemberUpdated)
 
 	middlewares []Middleware
 }
@@ -85,6 +85,7 @@ func New(token string, options ...ServerOption) *Server {
 		preCheckoutHandler:     func(*PreCheckoutQuery) {},
 		pollHandler:            func(*Poll) {},
 		pollAnswerHandler:      func(*PollAnswer) {},
+		chatMemberHandler:      func(*ChatMemberUpdated) {},
 
 		callbackQueryMatcher: make(map[string]func(*CallbackQuery)),
 
@@ -170,6 +171,8 @@ func (s *Server) Start() error {
 					s.pollHandler(update.Poll)
 				case update.PollAnswer != nil:
 					s.pollAnswerHandler(update.PollAnswer)
+				case update.ChatMember != nil:
+					s.chatMemberHandler(update.ChatMember)
 				}
 			}
 			var f = handleUpdate
@@ -226,28 +229,52 @@ func (s *Server) listenUpdates() (chan *Update, error) {
 
 func (s *Server) longPoolUpdates() (chan *Update, error) {
 	s.logger.Debugf("fetching updates...")
+
 	endpoint := fmt.Sprintf("%s/bot%s/%s", s.baseURL, s.token, "getUpdates")
-	req, err := http.NewRequest("GET", endpoint, nil)
-	if err != nil {
-		return nil, err
-	}
-	params := s.updatesParams
-	if params == nil {
-		params = url.Values{}
-	}
-	params.Set("timeout", fmt.Sprint(3600))
-	req.URL.RawQuery = params.Encode()
 	updates := make(chan *Update, s.bufferSize)
+
 	go func() {
 		for {
-			params.Set("offset", fmt.Sprint(s.nextOffset))
-			req.URL.RawQuery = params.Encode()
+			bodyMap := map[string]interface{}{
+				"timeout": 3600,
+				"offset":  s.nextOffset,
+				"allowed_updates": []string{
+					"message",
+					"edited_message",
+					"channel_post",
+					"edited_channel_post",
+					"inline_query",
+					"callback_query",
+					"shipping_query",
+					"pre_checkout_query",
+					"poll",
+					"poll_answer",
+					"chat_member",
+				},
+			}
+
+			bodyBytes, err := json.Marshal(bodyMap)
+			if err != nil {
+				s.logger.Errorf("failed to marshal request body: %v", err)
+				time.Sleep(1 * time.Second)
+				continue
+			}
+
+			req, err := http.NewRequest("POST", endpoint, bytes.NewReader(bodyBytes))
+			if err != nil {
+				s.logger.Errorf("failed to create request: %v", err)
+				time.Sleep(1 * time.Second)
+				continue
+			}
+			req.Header.Set("Content-Type", "application/json")
+
 			resp, err := s.httpClient.Do(req)
 			if err != nil {
 				s.logger.Errorf("unable to perform request: %v", err)
 				time.Sleep(1 * time.Second)
 				continue
 			}
+
 			var updatesResp *struct {
 				OK          bool      `json:"ok"`
 				Result      []*Update `json:"result"`
@@ -256,24 +283,25 @@ func (s *Server) longPoolUpdates() (chan *Update, error) {
 			err = json.NewDecoder(resp.Body).Decode(&updatesResp)
 			if err != nil {
 				s.logger.Errorf("unable to decode response: %v", err)
+				resp.Body.Close()
 				time.Sleep(1 * time.Second)
 				continue
 			}
-			err = resp.Body.Close()
-			if err != nil {
-				s.logger.Errorf("unable to close response body: %v", err)
-			}
+			resp.Body.Close()
+
 			if !updatesResp.OK {
-				s.logger.Errorf("updates query fail: %s", updatesResp.Description)
+				s.logger.Errorf("updates query failed: %s", updatesResp.Description)
 				time.Sleep(1 * time.Second)
 				continue
 			}
+
 			for _, up := range updatesResp.Result {
 				s.nextOffset = up.UpdateID + 1
 				updates <- up
 			}
 		}
 	}()
+
 	return updates, nil
 }
 
@@ -319,6 +347,11 @@ func (s *Server) HandleCallback(defaultCallbackHandler func(*CallbackQuery)) {
 		handler(cq)
 	}
 	s.callbackHandler = generalCallbackHandler
+}
+
+// HandleChatMember set handler for chat member updates
+func (s *Server) HandleChatMemberUpdated(handler func(*ChatMemberUpdated)) {
+	s.chatMemberHandler = handler
 }
 
 // Define callback handlers per key, and the key is actually the cq.Data we attach to our buttons

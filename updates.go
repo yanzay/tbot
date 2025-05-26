@@ -45,6 +45,20 @@ type Chat struct {
 	CanSetStickerSet            bool
 }
 
+type ChatInviteLink struct {
+	InviteLink              string `json:"invite_link"`
+	Creator                 *User  `json:"creator"`
+	CreatesJoinRequest      bool   `json:"creates_join_request"`
+	IsPrimary               bool   `json:"is_primary"`
+	IsRevoked               bool   `json:"is_revoked"`
+	Name                    string `json:"name,omitempty"`
+	ExpireDate              int    `json:"expire_date,omitempty"`
+	MemberLimit             int    `json:"member_limit,omitempty"`
+	PendingJoinRequestCount int    `json:"pending_join_request_count,omitempty"`
+	SubscriptionPeriod      int    `json:"subscription_period,omitempty"`
+	SubscriptionPrice       int    `json:"subscription_price,omitempty"`
+}
+
 // UnmarshalJSON implements json.Unmarshaler
 func (c *Chat) UnmarshalJSON(data []byte) error {
 	s := &struct {
@@ -367,6 +381,19 @@ type PreCheckoutQuery struct {
 	OrderInfo        *OrderInfo `json:"order_info"`
 }
 
+// ChatMemberUpdated represents an update
+// about chat member's status change in a chat.
+type ChatMemberUpdated struct {
+	Chat                    *Chat           `json:"chat"`
+	From                    *User           `json:"from"`
+	Date                    int             `json:"date"`
+	OldChatMember           *ChatMember     `json:"old_chat_member"`
+	NewChatMember           *ChatMember     `json:"new_chat_member"`
+	InviteLink              *ChatInviteLink `json:"invite_link,omitempty"`
+	ViaJoinRequest          bool            `json:"via_join_request,omitempty"`
+	ViaChatFolderInviteLink bool            `json:"via_chat_folder_invite_link,omitempty"`
+}
+
 // Update represents an incoming update
 // UpdateID is unique identifier
 // At most one of the other fields can be not nil
@@ -383,6 +410,7 @@ type Update struct {
 	PreCheckoutQuery   *PreCheckoutQuery   `json:"pre_checkout_query"`
 	Poll               *Poll               `json:"poll"`
 	PollAnswer         *PollAnswer         `json:"poll_answer"`
+	ChatMember         *ChatMemberUpdated  `json:"chat_member,omitempty"`
 }
 
 // PassportData contains information about Telegram Passport data shared with the bot by the user
